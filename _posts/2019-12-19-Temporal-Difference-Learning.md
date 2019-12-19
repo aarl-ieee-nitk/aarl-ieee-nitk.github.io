@@ -15,7 +15,7 @@ It turns out that we have already solved this problem in DP. Recall that DP uses
 
 **Temporal Difference** (TD) learning is a model-free method that combines the sampling nature of Monte-Carlo with the bootstrapping behavior of DP. Model-free means that we need not know the details of the environment like the transition and reward probabilities from one state to another given an action. They can be implemented in an online-incremental fashion, making them suitable even for continuing tasks. The figure shows a comparison between the three methods for value-based learning.
 
-![Value-based-methods](/css/compare_methods.png){:height="50%" width="50%"}
+<p align="center"><img src="/css/compare_methods.png"/ alt="Value-based-methods"></p>
 
 To be precise, the method that we are going to discuss is **TD(0)**, where the 0 indicates the extent of bootstrap. It means that we take the true value of just the immediate reward and then the discounted value for the VF for the next state. A more general version TD($\lambda$) is shown below.
 
@@ -175,7 +175,7 @@ These type of policies balance the rate of exploration and exploitation by setti
 
 The algorithm used for On-policy TD-control is popularly known as **SARSA**. The name **SARSA**, as shown in the figure, indicates a proper sequence of states, actions, and rewards for a time step.
 
-![SARSA-backup-diagram](/css/sarsa.jpeg)
+<p align="center"><img src="/css/sarsa.png"/ alt="SARSA-Backup-daigram"></p>
 
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma Q(S_{t+1},A_{t+1}) - Q(S_t,A_t) ]$$
 
@@ -187,7 +187,7 @@ A more straightforward approach towards balancing exploration and exploitation i
 
 **Q-learning** is an off-policy algorithm that can be used for control. Unlike **SARSA**, in **Q-learning**, we build an optimal policy by choosing the actions maximizing Q-values, irrespective of the policy being followed, hence making it off-policy.
 
-![Q-learning-backup-diagram](/css/q.jpeg)
+<p align="center"><img src="/css/q.png"/ alt="Q-learning-backup-diagram"></p>
 
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma max_aQ(S_{t+1} , a) - Q(S_t,A_t)]$$
 
@@ -460,7 +460,7 @@ The policy obtained after running Q-learning chooses a path that starts from $S$
 
 ### Comparing the two outputs
 
-![Cliff-walking-environment](/css/cliff_env.png){:height="50%" width="50%"}
+<p align="center"><img src="/css/cliff_env.png"/ alt="CLiff-walking-environment"></p>
 
 An important thing to notice in the two outputs is the path that the two algorithms find after playing the game for **10000** times. The output reflects the conservative nature of SARSA as it finds a safer path to the terminal state. Here "safer" means that the trajectory is at a good enough distance from the cliff, and there is less chance that the agent could wall into it. However, the path earns a net reward of **-16** units, which is less than one with Q-learning.
 
@@ -477,7 +477,7 @@ Although Q-learning finds the optimal policy, its online performance is worse th
 ### Expected SARSA
 Let us consider an update rule just like Q-learning, but with an **Expectation** over all the state-action pairs instead of a maximum. This algorithm is known as **Expected SARSA**. 
 
-![Expected-SARSA-backup-diagram](/css/expectedsarsa.png)
+<p align="center"><img src="/css/expectedsarsa.png"/ alt="Expected-SARSA-backup-diagram"></p>
 
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma E_\pi [Q(S_{t+1},A_{t+1}) | S_{t+1}] - Q(S_t,A_t)]$$
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma \displaystyle \sum_{a} \pi(a|S_{t+1})Q(S_{t+1},a) - Q(S_t,A_t)]$$
