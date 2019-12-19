@@ -470,9 +470,9 @@ But why did this difference come up?
 
 The answer lies in the nature of the two algorithms. One is on-policy, and the other is off-policy. Recall that off-policy finds the optimal policy, while on-policy converges to a near-optimal policy (results of on-policy may differ on tuning the hyperparameters). In both the algorithms, we "take" an action according to $\epsilon$-greedy policy, but in Q-learning, we use the maximizing action, irrespective of the action "taken". However, SARSA uses the same action to make updates. This means that SARSA pays for the exploratory moves it makes using a near-optimal policy that still explores. This makes SARSA more conservative.
 
-Following this, in the cases where the optimal moves are close to highly negative rewards, SARSA tends to avoid an optimal but dangerous path. However, if we gradually reduce the exploration parameters (like $\epsilon$), SARSA converges to the optimal policy.
+Following this, in the cases where the optimal moves are close to highly negative rewards, SARSA tends to avoid an optimal but dangerous path. If we change the negative reward for falling off the cliff to **-50** units or even lower (in magnitude), then SARSA takes a less safe path, which goes closer to the cliff. This indicates that as we make the magnitude of the negative reward higher, SARSA tends to be more conservative.
 
-Although Q-learning finds the optimal policy, its online performance is worse than SARSA (because of the closeness between the path and the cliff) in this case where we have set $\epsilon$ = 0.1. If we choose a lower exploration rate like 0.01, then Q-learning does better. Asymptotically, both converge to the optimal policy if $\epsilon$ is decreased over time.
+Although Q-learning finds the optimal policy, its online performance is worse than SARSA (because of the closeness between the path and the cliff) in this case where we have set $\epsilon$ = 0.1. If we choose a lower exploration rate like 0.01, then Q-learning does better. Nevertheless, asymptotically, both converge to the optimal policy if $\epsilon$ is decreased over time.
 
 ### Expected SARSA
 Let us consider an update rule just like Q-learning, but with an **Expectation** over all the state-action pairs instead of a maximum. This algorithm is known as **Expected SARSA**. 
