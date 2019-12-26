@@ -43,7 +43,7 @@ $$\nabla_{\theta} U(\pi_{\theta})\ = \sum_{\tau}R(\tau) P(\tau)\nabla_{\theta} l
 
 log of product is sum of logs:
 
-$$\nabla_{\theta} U(\pi_{\theta})\ = \sum_{\tau}R(\tau) P(\tau) \Big ( \sum_t \nabla_{\theta} log \pi_{\theta}(a_t | s_t) \Big  \ + \ \sum_t \nabla_{\theta} log P(s_{t+1} | s_t, a_t) ) $$
+$$\nabla_{\theta} U(\pi_{\theta})\ = \sum_{\tau}R(\tau) P(\tau) \Big ( \sum_t \nabla_{\theta} log \pi_{\theta}(a_t | s_t) \Big  \ + \ \nabla_{\theta}\rho_{0}(s_{0}) \sum_t \nabla_{\theta} log P(s_{t+1} | s_t, a_t) ) $$
 
 Getting rid of gradient terms which don't depend on $$\inline \theta $$, and converting back to an expectation, we get an expression that we can use:
 
