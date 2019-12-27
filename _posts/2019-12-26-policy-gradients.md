@@ -6,50 +6,68 @@ categories: reinforcement-learning, policy-gradients
 ---
 
 # Understanding Policy Gradients
-In reinforcement learning, we have an agent interacting with the environment. The agent acts, the environment gives feedback in the for of rewards. The agent wants to maximize the total rewards it gets.
+In reinforcement learning, we have an agent interacting with the environment. The agent acts, the environment gives feedback in the form of rewards. The agent wants to maximize the total reward (a.k.a. undiscounted return) it gets.
 
-The goal goal of policy gradients: make an agent (a Neural Network, to be concrete) that maximizes its expected return. To be precise, the agent must: for every state it might be in, assign a probability distribution for actions it might take, so that it gets the maximum possible return on average from then onwards.
+
+(NEED AGENT ENVIRONMENT LOOP, ALSO COMPARE WITH DQN)
+
 
 ## Vanilla Policy Gradient (REINFORCE)
-If we want the agent to get the maximum return on average, a natural first step is to directly optimize the policy(a NN that takes in state and outputs action probs).
 
-Find Ө to maximize Utility
+Let's assume our environment has discrete actions (a finite set of actions, and we can choose one of them at every timestep).  Our policy is a neural network taking the current state as input, and giving a single number (the probability) for each action we can take. Taking the CartPole environment as an example, our network would take a 4-vector as input and give a 2-vector as output.
 
-$$\mathop{maximize}_{\theta}\ \mathop{\mathbb{E}}_{\tau \char`\~ \pi_{\theta}}[R(\tau)])$$
+If we want the agent to get the maximum return on average, a natural first step is to directly optimize the policy, so that it leads to maximum return. $$\inline \pi_{\theta}$$ be our policy network with parameters $$\inline \theta$$. Naming things gives us power over them, so let's use $$\inline Utility$$ to denote the sum of rewards we can expect the agent to get on average.
 
-$$(Utility\ U(\pi_{\theta}) =\mathop{\mathbb{E}}_{\tau \char`\~  \pi_{\theta}}[R(\tau)]) $$
+Find $$\inline \theta$$ to maximize Utility
 
-Let $$\inline \pi_{\theta}$$ be our policy network. We can do gradient _ascent_ on $$\inline U(\pi)$$, wrt the policy net’s parameters, taking small steps in a direction which is likely to increase the return
+$$\mathop{argmax}_{\theta}\ \mathop{\mathbb{E}}_{\tau \sim \pi_{\theta}}[R(\tau)])$$
+
+$$(Utility\ U(\pi_{\theta}) =\mathop{\mathbb{E}}_{\tau \sim  \pi_{\theta}}[R(\tau)]) $$
+
+where, $$\inline \tau \ = (s_0, a_0, r_0, s_1, a_1, r_1, ...s_{H-1}, a_{H-1}, r_{H_!})$$ denotes one instance of the agent acting in the environment, a.k.a. trajectory/rollout
+
+$$\inline \tau \sim \pi_{\theta}$$ means the trajectory is _sampled_ from our policy $$\inline \pi_{\theta}$$, which is a fancy way to say that the actions are selected according to the outputs of our neural network (which we interpret as probabilities of taking each action).
+
+Our network starts out random, so we can make small changes to our network's parameters $$\inline \theta$$, taking small steps to increase the Utility. The size of these steps is given by the number $$\inline \eta$$ (eta), the learning rate. This is called gradient _ascent_, since we are going _up_ the slope of the function (Utility in this case).
 
 $$\theta_{k+1} \leftarrow \theta_{k} + \eta \nabla_{\theta} U(\pi_{\theta})$$
 
-We need the gradient term to be in a more useful form:
+We can't directly compute this gradient. Let's derive a more useful form. Expected value of a function is the probability-weighted sum over the possible values (in this discrete case):
 
-$$\nabla_{\theta} U(\pi_{\theta})\ = \nabla_{\theta}\mathop{\mathbb{E}}_{\tau \char`\~ \pi_{\theta}}[R(\tau)])$$
+$$\nabla_{\theta} U(\pi_{\theta})\ = \nabla_{\theta}\mathop{\mathbb{E}}_{\tau \sim \pi_{\theta}}[R(\tau)])$$
 
-Expanding the expectation,
+$$\ = \nabla_{\theta} \sum_{\tau} P(\tau)R(\tau)$$
 
-$$\nabla_{\theta} U(\pi_{\theta})\ = \nabla_{\theta} \sum_{\tau} P(\tau)R(\tau)$$
-
-We can take the gradient inside the integral, since the limits don't depend on $$\inline \theta$$:
+We can take the gradient inside the sum, since the limits don't depend on $$\inline \theta$$ :
 
 $$\nabla_{\theta} U(\pi_{\theta})\ =\sum_{\tau}\nabla_{\theta} \Big (P(\tau)R(\tau) \Big )$$
 
-Returns don't depend on $$\inline \theta$$. Also, $$\inline P(\tau) = P(s_0) \prod_t P(s_{t+1}|s_t, a_t) \pi_{\theta}(a_t|s_t)$$.
+We can apply the product rule here. But, returns don't depend on $$\inline \theta$$, so we're left with one term: 
 
-Here's an expression containing products. But differentiating long products is hard, so we use the log-derivative trick: $$\inline {d \over dx} log(f(x)) = {1 \over f(x)}{d \over dx} f(x)$$
+$$\nabla_{\theta} U(\pi_{\theta})\ =\sum_{\tau}R(\tau) \nabla_{\theta} \Big (P(\tau) \Big )$$
+
+Also, 
+
+$$P(\tau) = P(s_0) \prod_t P(s_{t+1}|s_t, a_t) \pi_{\theta}(a_t|s_t)$$ 
+
+(conditional probability, this follows from the assumption that next state depends on the current state and action. $$\inline \pi_{\theta}(a_t|s_t)$$ is the probability of taking the action $$\inline a_t$$ as given by our network)
+
+Here we have an expression containing products. But differentiating long products is hard. Since the log of products is the sum of logs, if we can somehow convert this equation into a logarithmic form, it would make our job much easier. 
+
+Recall the derivative of log: $$\inline \ {d \over dx} log(f(x)) = {1 \over f(x)}{d \over dx} f(x)$$ . With a little rearrangement, we get
 
 $$\nabla_{\theta} U(\pi_{\theta})\ = \sum_{\tau}R(\tau) P(\tau)\nabla_{\theta} log P(\tau) $$
 
 log of product is sum of logs:
 
-$$\nabla_{\theta} U(\pi_{\theta})\ = \sum_{\tau}R(\tau) P(\tau) \Big ( \sum_t \nabla_{\theta} log \pi_{\theta}(a_t | s_t) \Big  \ + \ \nabla_{\theta}\rho_{0}(s_{0}) \sum_t \nabla_{\theta} log P(s_{t+1} | s_t, a_t) ) $$
+$$\nabla_{\theta} U(\pi_{\theta})\ = \sum_{\tau}R(\tau) P(\tau) \Big ( 
+\ \nabla_{\theta}\rho_{0}(s_{0}) \ + \sum_{t=0}^{H-1}\big( \nabla_{\theta} log \pi_{\theta}(a_t | s_t) \ + \nabla_{\theta} log P(s_{t+1} | s_t, a_t) \big) \Big)$$
 
-Getting rid of gradient terms which don't depend on $$\inline \theta $$, and converting back to an expectation, we get an expression that we can use:
+The first and the third term inside the parentheses don't depend on $$\inline \theta $$, so we can get rid of them. Converting back to an expectation, we get an expression that we can use:
 
 $$\nabla_{\theta} U(\pi)\ = \mathop{\mathbb{E}}_{\tau} \Big[\sum_{t=0}^{H-1} R(\tau) \nabla_{\theta}\ log\ \pi (a_{t}|s_{t})\Big] $$
 
-Since this is an expectation, we can estimate it with SGD. If we have $$\inline m$$ samples, 
+Since this is an expectation, we can estimate it by taking the mean of some samples. If we have $$\inline m$$ samples, 
 
 $$\nabla_{\theta} U(\pi)\ \approx {1 \over m}\sum_{i=0}^{m-1}\sum_{t=0}^{H-1} R(\tau) \nabla_{\theta}\ log\ \pi (a_{t}|s_{t})$$
 
@@ -133,4 +151,5 @@ $$A(s_t, a_t) = [r_t + \gamma ^1r_{t+1} + … + \gamma ^kr_{t+k} + V(s_{t+k+1})]
 * [Lilian Weng's blog](https://lilianweng.github.io/). [This post](https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html) in particular.
 
 _(I plan on adding more algorithms as soon as I understand them a bit better. TRPO, PPO, SAC, DDPG, etc.)_
+
 
