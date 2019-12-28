@@ -6,15 +6,14 @@ categories: reinforcement-learning, policy-gradients
 ---
 
 # Understanding Policy Gradients
-In reinforcement learning, we have an agent interacting with the environment. The agent acts, the environment gives feedback in the form of rewards. The agent wants to maximize the total reward (a.k.a. undiscounted return) it gets.
+In reinforcement learning, we have an agent interacting with the environment. The agent acts, the environment gives feedback to tell the agent how favourable its actions were, in the form of rewards. The agent wants to maximize the total reward (a.k.a. undiscounted return) it gets.
 
-
-(NEED AGENT ENVIRONMENT LOOP, ALSO COMPARE WITH DQN)
+Say our environment is the Pacman game. The state can be the pixels on the screen, actions can be the direction we want to go (left, right, up, down). The environment may give a small reward every time the pacman eats a pellet, or eats a ghost, and a large reward on finishing the level
 
 
 ## Vanilla Policy Gradient (REINFORCE)
 
-Let's assume our environment has discrete actions (a finite set of actions, and we can choose one of them at every timestep).  Our policy is a neural network taking the current state as input, and giving a single number (the probability) for each action we can take. Taking the CartPole environment as an example, our network would take a 4-vector as input and give a 2-vector as output.
+Let's assume our environment has discrete actions (a finite set of actions, and we can choose one of them at every timestep).  Our policy is a neural network taking the current state as input, and giving a single number (the probability) for each action we can take. As a consequence, all these outputs need to sum up to 1. Taking the CartPole environment as an example, our network would take a 4-vector as input (the state) and give a 2-vector as output (action probabilities).
 
 If we want the agent to get the maximum return on average, a natural first step is to directly optimize the policy, so that it leads to maximum return. $$\inline \pi_{\theta}$$ be our policy network with parameters $$\inline \theta$$. Naming things gives us power over them, so let's use $$\inline Utility$$ to denote the sum of rewards we can expect the agent to get on average.
 
@@ -103,6 +102,21 @@ Some common choices for b:
 1. Mean return for all $$\inline (s, a) $$ in the current batch. This isn't the best option for b, but this already performs better and is more stable than the basic version. For a sample implementation of this, check out [this notebook on colab](https://colab.research.google.com/drive/1KwHIlm7xesrm3wg0ks-TlvHy09br4PAk)
 2. Time based: $$\inline b(s_{t}) = average\ returns\ after\ s_{t}$$ (in the current batch)
 3. Learned baselines: $$\inline b(s_{t}) = V_{\phi}(s_{t}) $$ (these kinds have a separate critic, which is, in a sense, evaluating the agent’s actions. Discussed next)
+
+Our final algorithm looks something like this:
+
+* Initialize policy network $$\inline \pi_{\theta}$$
+* Repeat:
+    * Run the agent in the environment. Collect trajectories sampled from the policy $$\inline \pi_{\theta}$$.
+    * Calculate Return-To-Go for every state. Make a batch of (state, action, rtg) triples. Also store the action probabilities for the actions actually taken.
+    * Compute baseline(s) for the states.
+    * Estimate the policy gradient using this batch:
+
+    $$\nabla_{\theta} U(\pi)\ \approx {1 \over m}\sum_{i=0}^{m-1}\sum_{t=0}^{H-1} \Big(RTG(\tau, t) - b(s)\Big) \nabla_{\theta}\ log\ \pi (a_{t}|s_{t})$$
+
+    * Backpropagate, and make a gradient ascent step:
+
+    $$\theta_{k+1} \leftarrow \theta_{k} + \eta \nabla_{\theta} U(\pi_{\theta})$$
 
 
 ## Actor-Critic methods
