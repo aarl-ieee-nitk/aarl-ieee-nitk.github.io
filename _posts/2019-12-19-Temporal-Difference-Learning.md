@@ -9,17 +9,19 @@ In this article, we will learn about **Temporal Difference** (TD) learning, a va
 
 ## TD-learning: A brief Introduction
 
-While sampling methods like **Monte-Carlo** (MC) prove to be advantageous over **Dynamic Programming** (DP) algorithms, a significant problem associated with them is that we have to wait for the episode to end (they are not online). The discounted sum of rewards till the end of the episode is used as the return value (**$G_t$**). However, this may take a lot of time if the episode is lengthy, or forever in case of non-episodic tasks. So what is the solution to this?
+While sampling methods like **Monte-Carlo** (MC) prove to be advantageous over **Dynamic Programming** (DP) algorithms, a significant problem associated with them is that we have to wait for the episode to end (they are not online). The discounted sum of rewards till the end of the episode (**$G_t$**) is used as the target value. However, this may take a lot of time if the episode is lengthy, or forever in case of non-episodic tasks. So what is the solution to this?
 
-It turns out that we have already solved this problem in DP. Recall that DP uses **bootstrapping** for making updates. So instead of waiting till the end of the episode, we consider the true discounted reward values up to a particular time step and then take the discounted estimated value function for the next state. So why not combine these two methods.
+$$G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + ... + \gamma^{T-t-1} R_T$$
 
-**Temporal Difference** (TD) learning is a model-free method that combines the sampling nature of Monte-Carlo with the bootstrapping behavior of DP. Model-free means that we need not know the details of the environment like the transition and reward probabilities from one state to another given an action. They can be implemented in an online-incremental fashion, making them suitable even for continuing tasks. The figure shows a comparison between the three methods for value-based learning.
+Dynamic Programming already provides a way to tackle this problem in the form of **bootstrapping**. So instead of waiting till the end of the episode, we consider the true discounted reward values up to a particular time step and then take the discounted estimated value function for the next state. So why not combine these two methods.
 
-<p align="center"><img src="/css/compare_methods.png"/ alt="Value-based-methods"></p>
+**Temporal Difference** (TD) learning is a family of model-free methods that combines the sampling nature of Monte-Carlo with the bootstrapping behavior of DP. Model-free means that we need not know the details of the environment like the transition and reward probabilities from one state to another given an action. They can be implemented in an online-incremental fashion, making them suitable even for continuing tasks. The figure shows a comparison between the three methods for value-based learning.
+
+<p align="center"><img src="/assets/compare_methods.png"/ alt="Value-based-methods"></p>
 
 To be precise, the method that we are going to discuss is **TD(0)**, where the 0 indicates the extent of bootstrap. It means that we take the true value of just the immediate reward and then the discounted value for the VF for the next state. A more general version TD($\lambda$) is shown below.
 
-$$G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + ... + \gamma^{n-1} R_{t+n} + \gamma^n V_{t+n-1}(S_{t+n}) $$
+$$G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + ... + \gamma^{n-1} R_{t+n} + \gamma^n V_{t+n-1}(S_{t+n})$$
 
 #### Fun Fact:
 ```
@@ -27,7 +29,9 @@ One of the major contrasting features between MC and TD learning is that TD lear
 more suited for Markovian environments, making it a better choice for many Markovian RL
 problems!
 ```
-In general Reinforcement learning, the problems are broadly divided into **Prediction** and **Control**. The prediction problem aims at finding the optimal value function given a policy, while the control methods find optimal value function as well as optimal policy.
+The intuition behind this is that MC methods estimate the value functions, which minimize the mean-squared training error. It means that the values estimated by MC are closest possible to the actual returns observed during training, which is evident since we wait for the episode to terminate while making updates. On the other hand, TD learning converges to the maximum likelihood Markov model, by implicitly building an **MDP** to describe the environment and which best fits the data. So it first fits an MDP and then solves it, which helps it in exploiting the Markov property. So instead of looking at complete trajectories (as we did in MC), we can understand the environment in terms of states. The current state completely summarizes all the information in the past, which is required to take an optimal action. Hence, in Markovian environments, bootstrapping would help, and we need not necessarily see the actual returns.
+
+Moving on, in general Reinforcement Learning, the problems are broadly divided into **Prediction** and **Control**. The prediction problem aims at finding the optimal value function given a policy, while the control methods find optimal value function as well as optimal policy.
 
 ## TD-Prediction
 
@@ -35,7 +39,7 @@ The Prediction problem involves sampling an action using the given policy and ma
 
 $$ V(S_t) = V(S_t) + \alpha [ R_{t+1} + \gamma V(S_{t+1}) - V(S_t) ] $$
 
-The error is weighed by a step-size parameter **$\alpha$** (learning rate), which indicates the extent to which the new information about the current state ($R_{t+1} + \gamma V(S_{t+1})$) is acquired. This is because the new information available to us tells a bit more about the environment (since we have seen one step of the actual environment). $\alpha$ = **0** indicates that the old estimate is retained, while $\alpha$ = **1** represents completely forgetting the previous estimate and using the new one. There can be some issues of convergence with probability **1** using a constant step-size since it does not obey the conditions for **stochastic approximation**, as shown below.
+The error is weighed by a step-size parameter **$\alpha$** (learning rate), which indicates the extent to which the new information about the current state ($R_{t+1} + \gamma V(S_{t+1})$) updates our current estimate. This is because the new information available to us tells a bit more about the environment (since we have seen one step of the actual environment). $\alpha$ = **0** indicates that the old estimate is retained, while $\alpha$ = **1** represents completely forgetting the previous estimate and using the new one. There can be some issues of convergence with probability **1** using a constant step-size since it does not obey the conditions for **stochastic approximation**, as shown below.
 
 $$ \displaystyle \sum_{n=1}^\infty \alpha_n = \infty, $$ $$\displaystyle \sum_{n=1}^\infty \alpha^2_n = \infty $$
 
@@ -161,7 +165,7 @@ As expected, the output shows the values for the shortest and optimal path from 
 
 ## TD-Control
 
-The Control problem requires us to find both the optimal policy as well as value function. Here comes the dilemma of **Exploration** and **Exploitation**. This is one of the most fundamental problems in RL, and people have come up with various methods to solve it. The agent needs to make full use of information about the environment available to gain the maximum reward. Still, for knowing more about the environment, it needs to explore, which comes at the cost of getting less reward.
+The Control problem requires us to find both the optimal policy as well as value function. Here comes the dilemma of **Exploration** and **Exploitation**. This is one of the most fundamental problems in RL, and various approaches have been proposed over the years to strike a good balance between the two. The agent needs to make full use of information about the environment available to gain the maximum reward. Still, for knowing more about the environment, it needs to explore, which comes at the cost of getting less reward. As we would observe, it is a fundamental trade-off.
 
 Broadly, there are two approaches to balance exploration and exploitation-
 
@@ -175,7 +179,7 @@ These type of policies balance the rate of exploration and exploitation by setti
 
 The algorithm used for On-policy TD-control is popularly known as **SARSA**. The name **SARSA**, as shown in the figure, indicates a proper sequence of states, actions, and rewards for a time step.
 
-<p align="center"><img src="/css/sarsa.png"/ alt="SARSA-Backup-daigram"></p>
+<p align="center"><img src="/assets/sarsa.png"/ alt="SARSA-Backup-daigram"></p>
 
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma Q(S_{t+1},A_{t+1}) - Q(S_t,A_t) ]$$
 
@@ -187,7 +191,7 @@ A more straightforward approach towards balancing exploration and exploitation i
 
 **Q-learning** is an off-policy algorithm that can be used for control. Unlike **SARSA**, in **Q-learning**, we build an optimal policy by choosing the actions maximizing Q-values, irrespective of the policy being followed, hence making it off-policy.
 
-<p align="center"><img src="/css/q.png"/ alt="Q-learning-backup-diagram"></p>
+<p align="center"><img src="/assets/q.png"/ alt="Q-learning-backup-diagram"></p>
 
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma max_aQ(S_{t+1} , a) - Q(S_t,A_t)]$$
 
@@ -460,7 +464,7 @@ The policy obtained after running Q-learning chooses a path that starts from $S$
 
 ### Comparing the two outputs
 
-<p align="center"><img src="/css/cliff_env.png"/ alt="CLiff-walking-environment"></p>
+<p align="center"><img src="/assets/cliff_env.png"/ alt="CLiff-walking-environment"></p>
 
 An important thing to notice in the two outputs is the path that the two algorithms find after playing the game for **10000** times. The output reflects the conservative nature of SARSA as it finds a safer path to the terminal state. Here "safer" means that the trajectory is at a good enough distance from the cliff, and there is less chance that the agent could wall into it. However, the path earns a net reward of **-16** units, which is less than one with Q-learning.
 
@@ -477,7 +481,7 @@ Although Q-learning finds the optimal policy, its online performance is worse th
 ### Expected SARSA
 Let us consider an update rule just like Q-learning, but with an **Expectation** over all the state-action pairs instead of a maximum. This algorithm is known as **Expected SARSA**. 
 
-<p align="center"><img src="/css/expectedsarsa.png"/ alt="Expected-SARSA-backup-diagram"></p>
+<p align="center"><img src="/assets/expectedsarsa.png"/ alt="Expected-SARSA-backup-diagram"></p>
 
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma E_\pi [Q(S_{t+1},A_{t+1}) | S_{t+1}] - Q(S_t,A_t)]$$
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma \displaystyle \sum_{a} \pi(a|S_{t+1})Q(S_{t+1},a) - Q(S_t,A_t)]$$
