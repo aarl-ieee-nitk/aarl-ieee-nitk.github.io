@@ -1,6 +1,9 @@
 ---
 layout: post
 title:  "Temporal Difference Learning"
+author: "Videh Raj Nema"
+author_github: vrn25
+github_username: 'vrn25'
 date:   2019-12-19 18:26:11 +0530
 categories: reinforcement-learning, value-based-learning, bootstrapped-learning, sampled-learning
 ---

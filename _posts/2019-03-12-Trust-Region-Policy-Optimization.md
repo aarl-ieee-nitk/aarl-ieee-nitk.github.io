@@ -2,10 +2,12 @@
 layout: post
 title:  "Trust Region Policy Optimization"
 author: "Videh Raj Nema"
+author_github: vrn25
+github_username: 'vrn25'
 date:   2019-03-12 18:26:11 +0530
 categories: reinforcement-learning, policy-gradient-methods, sampled-learning, optimization theory
 ---
-# Include sources and references
+
 In this article, we will look at the **Trust Region Policy Optimization** (TRPO) algorithm, a direct policy-based method for finding the optimal behavior in Reinforcement Learning problems.
 
 ## So what is TRPO??
