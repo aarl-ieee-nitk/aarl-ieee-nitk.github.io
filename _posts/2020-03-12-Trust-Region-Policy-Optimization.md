@@ -4,7 +4,7 @@ title:  "Trust Region Policy Optimization"
 author: "Videh Raj Nema"
 author_github: vrn25
 github_username: 'vrn25'
-date:   2019-03-12 18:26:11 +0530
+date:   2020-03-12 18:26:11 +0530
 categories: reinforcement-learning, policy-gradient-methods, sampled-learning, optimization theory
 ---
 

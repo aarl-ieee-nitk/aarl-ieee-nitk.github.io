@@ -9,7 +9,7 @@ categories: reinforcement-learning, policy-gradient-methods, sampled-learning, o
 ---
 ## Introduction
 
-In the previous post, we discussed the **Trust Region Policy Optimization** (TRPO) method for solving the full Reinforcement Learning problem. TRPO builds upon the **Natural Policy Gradient** approach, with a series of approximations for solving the second-order optimization problem. Despite all the theoretical guarantees that TRPO gives, it does not work very well in practice. There can be two reasons for this - 
+In the previous [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2019/03/12/Trust-Region-Policy-Optimization.html), we discussed the **Trust Region Policy Optimization** (TRPO) method for solving the full Reinforcement Learning problem. TRPO builds upon the **Natural Policy Gradient** approach, with a series of approximations for solving the second-order optimization problem. Despite all the theoretical guarantees that TRPO gives, it does not work very well in practice. There can be two reasons for this - 
 
 1.  The errors introduced due to approximations magnify and, in turn, lead to divergence of the policy parameters.
 
@@ -31,11 +31,11 @@ PPO is an on-policy algorithm that builds a stochastic policy by tweaking the po
 
 PPO balances between Exploration and Exploitation like other on-policy methods. Since it is on-policy, it samples behavior from the same policy it optimizes. Initially, the exploration rate is higher as compared to the exploitation so that it can explore the state space. Eventually, the policy focuses more on exploiting the rewards already found. This, however, can lead to the policy converging to a suboptimal policy.
 
-I hope that you have gone through my previous post on TRPO. I assume that you have the necessary knowledge to understand the maths behind the equation below from my previous article. I will start building the idea and intuition behind PPO from the following equation:
+I hope that you have gone through my previous [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2019/03/12/Trust-Region-Policy-Optimization.html) on TRPO. I assume that you have the necessary knowledge to understand the maths behind the equation below from my previous article. I will start building the idea and intuition behind PPO from the following equation:
 
 <p align="center"><img src="/assets/npg.png"/ alt="Natural policy gradient"></p>
 
-After all the math in the TRPO post, we arrive at this policy parameter update to limit the policy changes and to ensure monotonic policy improvement. So what are the challenges associated with solving this optimization update?
+After all the math in the TRPO [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2019/03/12/Trust-Region-Policy-Optimization.html), we arrive at this policy parameter update to limit the policy changes and to ensure monotonic policy improvement. So what are the challenges associated with solving this optimization update?
 
 Here, $F$ is the **Fisher Information Matrix** (FIM), also known as the Hessian $H$. I will use $F$ and $H$ interchangeably in this post.
 
