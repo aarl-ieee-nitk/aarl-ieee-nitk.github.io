@@ -49,11 +49,13 @@ FGSM works as a result of the hypothesis the authors propose for the occurence o
 
 Following is a paragraph from the paper.
 
+
 """
 *Why should multiple extremely non-linear models with excess capacity consistently label out-of-distribution points in the same way? This behavior is especially surprising from the view of the hypothesis that adversarial examples finely tile space like the rational numbers among the reals, because in this view adversarial examples are common but occur only at very precise locations*.
 
 *Under the linear view, adversarial examples occur in broad subspaces. The direction η need only have a positive dot product with the gradient of the cost function, and need only be large enough.*
 """
+
 
 So the authors proposed a new hypothesis for the cause of adversarial examples to be these models being highly linear or *piecewise linear functions of the inputs*, and extrapolating in a linear fashion, thus exhibiting high confidence at the points it has not seen in the training set. The adversarial examples exist in broad subspaces of the input space. The adversary need not know the exact location of the point in the space, but just needs to find a direction (gradient of the cost function) giving a large positive dot product with the perturbation. In fact, if we take the difference between an adversarial example and a clean example, we have a direction in the input space and adding that to a clean example would almost always result in an adversarial example.
 
@@ -130,9 +132,11 @@ Previous works on adversarial attacks in Deep RL have used the same image pertur
 
 A motivation for this attack from the paper is -
 
+
 """
 *RL has been applied in settings as varied as autonomous driving (Dosovitskiy et al., 2017), negotiation (Lewis et al., 2017) and automated trading (Noonan, 2017). In domains such as these, the attacker cannot usually directly modify the victim policy’s input. For example, in autonomous driving pedestrians and other drivers can take actions in the world that affect the camera image, but only in a physically realistic fashion. They cannot add noise to arbitrary pixels, or make a building disappear. Similarly, in financial trading an attacker can send orders to an exchange which will appear in the victim’s market data feed, but the attacker cannot modify observations of a third party’s orders.*
 """
+
 
 The method in this paper seems to be more appropriate for attacking Deep RL in actual deployment domains. A key point here is that the adversary trains its policy in black-box scenario where it can just give observation input to the victim (by its actions) and receive the output from it. **The key difference in this approach is using a physically realistic threat model that disallows direct modifications of the victim’s observations.**
 
@@ -177,7 +181,9 @@ Till now, there is no concrete work in defenses in such attacks and is left to f
 Lastly following is a paragraph from the paper which gives a few important points to keep in mind regarding future work -
 
 """
+
 *While it may at first appear unsurprising that a policy trained as an adversary against another RL policy would be able to exploit it, we believe that this observation is highly significant. The policies we have attacked were explicitly trained via self-play to be robust. Although it is known that self-play with deep RL may not converge, or converge only to a local rather than global Nash, self-play has been used with great success in a number of works focused on playing adversarial games directly against humans ([Silver et al., 2018](https://deepmind.com/research/publications/general-reinforcement-learning-algorithm-masters-chess-shogi-and-go-through-self-play); [OpenAI, 2018](https://openai.com/blog/openai-five/)). Our work shows that even apparently strong self-play policies can harbor serious but hard to find failure modes, demonstrating these theoretical limitations are practically relevant and highlighting the need for careful testing.*
+
 """
 
 ## Defenses against Adversarial attacks
@@ -234,9 +240,11 @@ As a keynote, when Defensive Distillation was introduced, it failed all the atta
 There are some key points in the [Carlini-Wagner](https://arxiv.org/pdf/1608.04644.pdf) attack paper which explain the failure of Defensive Distillation -
 
 """
+
 *The key insight here is that by training to match the first network, we will hopefully avoid overfitting against any of the training data. If the reason that neural networks exist is because neural networks are highly non-linear and have “blind spots” [[46](https://arxiv.org/pdf/1312.6199.pdf)] where adversarial examples lie, then preventing this type of over-fitting might remove those blind spots.*
 
 *In fact, as we will see later, defensive distillation does not remove adversarial examples. One potential reason this may occur is that others [[11](https://arxiv.org/pdf/1412.6572.pdf)] have argued the reason adversarial examples exist is not due to blind spots in a highly non-linear neural network, but due only to the locally-linear nature of neural networks. This so-called linearity hypothesis appears to be true [[47](https://ieeexplore.ieee.org/document/8093865)], and under this explanation it is perhaps less surprising that distillation does not increase the robustness of neural networks.*
+
 """
 
 ## End thoughts
@@ -244,7 +252,9 @@ There are some key points in the [Carlini-Wagner](https://arxiv.org/pdf/1608.046
 Having seen these attack approaches, a nice explanation of the existence of such attacks is given by the story of **Cleverhans** -
 
 """
+
 *So Cleverhans was a horse and its owner had trained it to solve arithmetic problems. The owner would say “Cleverhans, what is 1+1?”, and it would tap its feet two times and the crowd would cheer for him or its owner would give it some fruit to eat as a reward. However, a psychologist examined the situation and figured out that the horse actually did not learn to do arithmetic. He discovered that if the horse was placed in a dark room with no audience and a person wearing a mask would ask it the arithmetic problem, it would just continue to tap feet on the floor waiting to receive some signal to stop.*
+
 """
 
 This is exactly what is happening with our Machine Learning models. They fit to the training and the test set with very high accuracies, but if an adversary intentionally designs some example to fail them, they get fooled. In the story of *Cleverhans*, the horse assumed the correct signal to be the cheerings of the crowd or the fruit that its owner would give when it reached the correct number of taps. This is similar to a Weather predicting ML model. **Instead of knowing that the clouds actually cause rains, it believes that the “presence” of clouds causes rains**.
