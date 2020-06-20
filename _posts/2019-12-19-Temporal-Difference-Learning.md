@@ -8,15 +8,18 @@ date:   2019-12-19 18:26:11 +0530
 categories: reinforcement-learning, value-based-learning, bootstrapped-learning, sampled-learning
 ---
 
-In this article, we will learn about **Temporal Difference** (TD) learning, a value-based method for solving Reinforcement Learning problems. We will also implement TD algorithms from scratch on Gridworld and Cliff-walking environments.
+In this article, we will learn about **Temporal Difference** (TD) learning, a value-based method for solving Reinforcement Learning problems. We will also implement Tabular TD algorithms from scratch on Gridworld and Cliff-walking environments.
 
 ## TD-learning: A brief Introduction
 
-While sampling methods like **Monte-Carlo** (MC) prove to be advantageous over **Dynamic Programming** (DP) algorithms, a significant problem associated with them is that we have to wait for the episode to end (they are not online). The discounted sum of rewards till the end of the episode (**$G_t$**) is used as the target value. However, this may take a lot of time if the episode is lengthy, or forever in case of non-episodic tasks. So what is the solution to this?
+While sampling-based methods like **Monte-Carlo** (MC) prove to be advantageous over **Dynamic Programming** (DP) algorithms, a significant problem associated with them is that we have to wait for the episode to end (they are not online). The discounted sum of rewards till the end of the episode (**$G_t$**) is used as the *target* value in the Value-function updates. However, this may take a lot of time if the episode is lengthy, or forever in case of non-episodic tasks. So what is the solution to this?
 
 $$G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + ... + \gamma^{T-t-1} R_T$$
 
-Dynamic Programming already provides a way to tackle this problem in the form of **bootstrapping**. So instead of waiting till the end of the episode, we consider the true discounted reward values up to a particular time step and then take the discounted estimated value function for the next state. So why not combine these two methods.
+One option might be to truncate the return and end the episode after a certain number of threshold time-steps. However, this might reuslt in the loss of information, especially in the sparse and delayed reward domains, where the agent gets rewards only after trying out many actions in a proper sequence, instead of randomly wandering around. To get over this, Dynamic Programming already provides a way to tackle this problem in the form of **bootstrapping** (updating
+the value estimate for a state from the estimated values of subsequent states). So instead of waiting till the end of the episode, we consider the true discounted reward values up to a particular time step and then take the discounted estimated value function for the next state. So why not combine these two approaches.
+
+We use **Temporal-Difference** for this. The idea is very simple and elegant. Let me describe it with an example - Assume that an agent is playing the game of [Tic-Tac-Toe](https://en.wikipedia.org/wiki/Tic-tac-toe) against some **fixed** opponent. Keeping the opponent fixed reduces the problem to a single-agent MDP instead of Multi-agent. The agent does not have any information about the environment and just gets a reward signal +1 and -1 at the end of a game if it wins or otherwise, respectively. In this setting suppose the agent *thinks* that from the current state $s_t$, on taking some particular action $a_t$, it will have 0.9 probability of winning. It executes that state-action pair and goes into the future and observes the value of the next state. However, suppose the agent had played a bad move which ended up in it losing the game in the future. Clearly, the agent had not anticipated this. So it comes back to that state-action pair $s_t, a_t$ and corrects its estimation of the probability of winning the game by reducing it from $0.9$ to say $0.7$. This is exactly the idea of **Temporal-Difference**! You play some move, see its outcome based on the estimation of the future states, and then come back to correct your current estimation. Note that vice-versa would happen if the agent had won the game, and it would then try to increase the probability of winning from that state-action pair.
 
 **Temporal Difference** (TD) learning is a family of model-free methods that combines the sampling nature of Monte-Carlo with the bootstrapping behavior of DP. Model-free means that we need not know the details of the environment like the transition and reward probabilities from one state to another given an action. They can be implemented in an online-incremental fashion, making them suitable even for continuing tasks. The figure shows a comparison between the three methods for value-based learning.
 
@@ -26,6 +29,8 @@ To be precise, the method that we are going to discuss is **TD(0)**, where the 0
 
 $$G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + ... + \gamma^{n-1} R_{t+n} + \gamma^n V_{t+n-1}(S_{t+n})$$
 
+Note that this is Forward-view TD($\lambda$). The more efficient and practical Backward-view TD($\lambda$) is implemented using [Eligibility Traces](http://incompleteideas.net/book/first/ebook/node72.html#:~:text=The%20trace%20marks%20the%20memory,between%20events%20and%20training%20information.).
+
 #### Fun Fact:
 ```
 One of the major contrasting features between MC and TD learning is that TD learning is
@@ -34,7 +39,7 @@ problems!
 ```
 The intuition behind this is that MC methods estimate the value functions, which minimize the mean-squared training error. It means that the values estimated by MC are closest possible to the actual returns observed during training, which is evident since we wait for the episode to terminate while making updates. On the other hand, TD learning converges to the maximum likelihood Markov model, by implicitly building an **MDP** to describe the environment and which best fits the data. So it first fits an MDP and then solves it, which helps it in exploiting the Markov property. So instead of looking at complete trajectories (as we did in MC), we can understand the environment in terms of states. The current state completely summarizes all the information in the past, which is required to take an optimal action. Hence, in Markovian environments, bootstrapping would help, and we need not necessarily see the actual returns.
 
-Moving on, in general Reinforcement Learning, the problems are broadly divided into **Prediction** and **Control**. The prediction problem aims at finding the optimal value function given a policy, while the control methods find optimal value function as well as optimal policy.
+Moving on, in general Reinforcement Learning, the problems are broadly divided into **Prediction** and **Control**. The prediction problem aims at finding the optimal value function, given a policy, while the control methods find optimal value function as well as optimal policy.
 
 ## TD-Prediction
 
@@ -46,7 +51,7 @@ The error is weighed by a step-size parameter **$\alpha$** (learning rate), whic
 
 $$ \displaystyle \sum_{n=1}^\infty \alpha_n = \infty, $$ $$\displaystyle \sum_{n=1}^\infty \alpha^2_n = \infty $$
 
-However, it is guaranteed to converge in the mean case.
+Nevertheless, it is guaranteed to converge in the mean case.
 
 The discount factor $\gamma$ tells how much we care about the delayed rewards. $\gamma$ = **0** indicates myopic nature of caring just about the immediate reward $R_{t+1}$, while $\gamma$ = **1** indicates we care about the distant rewards as well. 
 
@@ -97,7 +102,7 @@ def env(state, action):
         elif(action == 3):
             next_state = state - 1 if state % columns else state 
     # State Transition Probability is 1 because the environment is deterministic
-    return_val = [1, next_state, reward(next_state), isdone(next_state)]
+    return_val = [1, next_state, reward(state), isdone(next_state)]
     return return_val
 ```
 ### Setting the Hyperparameters
@@ -108,7 +113,7 @@ rows = 5
 columns = 7
 num_states = rows * columns
 num_actions = 4
-gamma = 0.99 # Discount Factor
+gamma = 0.999 # Discount Factor
 episodes = 100000 # Number of games played
 # UNIFORM RANDOM POLICY
 rand_policy = np.ones((num_states, num_actions))/num_actions
@@ -147,28 +152,28 @@ def td_pred(policy, flag):
 For Uniform Random policy
 ```python
 #Value Function for Uniform Random policy:
- [[  0.         -22.33819216 -28.63763432 -37.26582831 -39.81066142 -40.54681075 -40.68590583]
-  [-15.99701911 -26.33214378 -33.47388676 -37.20716234 -38.2916439  -38.32498693 -37.62389912]
-  [-30.64077571 -33.14231043 -36.67013254 -37.55463134 -36.02171993 -35.77167907 -32.35539503]
-  [-35.43086699 -37.49974261 -38.40503165 -37.93735599 -34.75073402 -29.56627336 -21.2031655 ]
-  [-39.92652317 -40.05292786 -39.18781271 -36.86909471 -32.24353971 -14.25716653   0.        ]]
+ [[  0.         -22.8145219  -41.04389241 -49.63242096 -53.92961483 -55.14102473 -53.66020676]
+  [-33.77022359 -40.97067518 -45.58716647 -52.03257216 -53.19503964 -53.81359137 -50.4964524 ]
+  [-45.93384504 -47.98148611 -53.73653323 -53.05661863 -50.92048008 -43.9545928  -40.13167269]
+  [-54.48416843 -55.81282363 -56.54764755 -53.70269288 -44.73549628 -33.37134078 -21.46056466]
+  [-60.74101434 -58.86750144 -57.60923797 -54.66034268 -43.67117606 -28.48519834   0.        ]]
 ```
 The output shows the estimated value function for each of the states for the given policy. 
 
 For Greedy policy
 ```python
 #Value Function for deterministic greedy policy:
- [[ 0.        0.       -1.       -1.99     -2.9701   -3.940399 -2.9701  ]
-  [ 0.       -1.       -1.99     -2.9701   -3.940399 -2.9701   -1.99    ]
-  [-1.       -1.99     -2.9701   -3.940399 -2.9701   -1.99     -1.      ]
-  [-1.99     -2.9701   -3.940399 -2.9701   -1.99     -1.        0.      ]
-  [-2.9701   -3.940399 -2.9701   -1.99     -1.        0.        0.      ]]
+[[ 0.       -1.       -1.999    -2.997001 -3.994004 -4.99001  -3.994004]
+ [-1.       -1.999    -2.997001 -3.994004 -4.99001  -3.994004 -2.997001]
+ [-1.999    -2.997001 -3.994004 -4.99001  -3.994004 -2.997001 -1.999   ]
+ [-2.997001 -3.994004 -4.99001  -3.994004 -2.997001 -1.999    -1.      ]
+ [-3.994004 -4.99001  -3.994004 -2.997001 -1.999    -1.        0.      ]]
 ```
 As expected, the output shows the values for the shortest and optimal path from each state to terminal state.
 
 ## TD-Control
 
-The Control problem requires us to find both the optimal policy as well as value function. Here comes the dilemma of **Exploration** and **Exploitation**. This is one of the most fundamental problems in RL, and various approaches have been proposed over the years to strike a good balance between the two. The agent needs to make full use of information about the environment available to gain the maximum reward. Still, for knowing more about the environment, it needs to explore, which comes at the cost of getting less reward. As we would observe, it is a fundamental trade-off.
+The Control problem requires us to find both the optimal policy as well as value function. Here comes the dilemma of **Exploration** v/s **Exploitation**. This is one of the most fundamental problems in RL, and various approaches have been proposed over the years to strike a good balance between the two. The agent needs to make full use of information about the environment available to gain the maximum reward. Still, for knowing more about the environment, it needs to explore, which might come at the cost of getting less reward. As one would observe, it is a fundamental trade-off.
 
 Broadly, there are two approaches to balance exploration and exploitation-
 
@@ -190,9 +195,9 @@ The update equation for **SARSA** is identical to the one for TD-prediction, exc
 
 ### Off-policy TD-Control (Q-learning)
 
-A more straightforward approach towards balancing exploration and exploitation is to use two different policies. A **behavior** policy $b$ to generate information about the environment and a **target** policy $\pi$ to evaluate and improve. The former can be used to ensure sufficient exploration and the latter to build a greedy deterministic policy for the agent. We can use techniques like **Importance Sampling** to use the values from one distribution to generate values for another distribution. We won't go into the details of Importance Sampling in this article.
+A more straightforward approach towards balancing exploration and exploitation is to use two different policies. A **behavior** policy $b$ to generate information about the environment and a **target** policy $\pi$ to evaluate and improve. The former can be used to ensure sufficient exploration and the latter to build a greedy deterministic policy for the agent. We can use techniques like [**Importance Sampling**](https://en.wikipedia.org/wiki/Importance_sampling#:~:text=Importance%20sampling%20is%20a%20variance,parameter%20being%20estimated%20than%20others.) to use the values from one distribution to generate values for another distribution. However, I won't go into the details of Importance Sampling in this article.
 
-**Q-learning** is an off-policy algorithm that can be used for control. Unlike **SARSA**, in **Q-learning**, we build an optimal policy by choosing the actions maximizing Q-values, irrespective of the policy being followed, hence making it off-policy.
+**Q-learning** is an off-policy algorithm that can be used for control. Unlike **SARSA**, in **Q-learning**, we build an optimal policy by choosing the actions maximizing Q-values, *irrespective* of the policy being followed, hence making it off-policy.
 
 <p align="center"><img src="/assets/q.png"/ alt="Q-learning-backup-diagram"></p>
 
@@ -469,7 +474,7 @@ The policy obtained after running Q-learning chooses a path that starts from $S$
 
 <p align="center"><img src="/assets/cliff_env.png"/ alt="CLiff-walking-environment"></p>
 
-An important thing to notice in the two outputs is the path that the two algorithms find after playing the game for **10000** times. The output reflects the conservative nature of SARSA as it finds a safer path to the terminal state. Here "safer" means that the trajectory is at a good enough distance from the cliff, and there is less chance that the agent could wall into it. However, the path earns a net reward of **-16** units, which is less than one with Q-learning.
+An important thing to notice in the two outputs is the path that the two algorithms find after playing the game for **10000** trials. The output reflects the conservative nature of SARSA as it finds a safer path to the terminal state. Here "safer" means that the trajectory is at a good enough distance from the cliff, and there is less chance that the agent could wall into it. However, the path earns a net reward of **-16** units, which is less than one with Q-learning.
 
 In contrast to this, we see that Q-learning finds the Optimal path to $T$, which goes just over the cliff. Hence we get the maximum possible reward **-12** units on following this policy. However, this path is a bit unsafe because there is more probability that the agent could fall into the cliff while training.
 
@@ -493,4 +498,4 @@ We can use it both on as well as off-policy. If $\pi$ is a greedy policy while t
 
 ## Conclusion
 
-In this article, we saw some well-known methods to solve Reinforcement Learning problems using **bootstrapping** and **sampling**. However, it is difficult to extend these algorithms to real-world RL problems. Real-world RL problems like the game of **Go** can have up to $10^{170}$ states, and many problems like teaching a Helicopter to fly in a park can be an infinite number of states. The table-lookup representation used until now is highly impractical to solve these problems. Hence we use **function approximators** like **Neural-Networks** to find an approximate action-value function rather than finding the value for each state-action pair. However, the core logic behind the algorithms remains the same, just with a change in the way they are implemented.
+In this article, we saw some well-known methods to solve Reinforcement Learning problems using **bootstrapping** and **sampling**. However, it is difficult to extend these algorithms to real-world RL problems. Real-world RL problems like the game of **Go** can have up to $10^{170}$ states and more than $200$ possible moves to make at a time, and many problems like teaching a Helicopter to fly in a park, a robot trying to manipulate objects, etc. can have extremely large or asymptotically infinite state and action spaces. The table-lookup representation used until now is highly impractical to solve these problems. Hence we use **function approximators** like **Neural-Networks** to find an approximate action-value function rather than finding the value for each state-action pair. The approximator is chosen such that $|d| << S$, where $d$ is the cardinality of the approximator dimensions and $S$ is the dimension of the state-space, and then tuned so that a large part of the state-action space can be represented by just a few parameters (a crude way of explaining the idea). However, the core logic behind the algorithms remains the same, just with a change in the way they are implemented.
