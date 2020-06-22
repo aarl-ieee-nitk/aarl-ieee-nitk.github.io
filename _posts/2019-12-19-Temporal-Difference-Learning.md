@@ -187,7 +187,7 @@ These type of policies balance the rate of exploration and exploitation by setti
 
 The algorithm used for On-policy TD-control is popularly known as **SARSA**. The name **SARSA**, as shown in the figure, indicates a proper sequence of states, actions, and rewards for a time step.
 
-<p align="center"><img src="/assets/sarsa.png"/ alt="SARSA-Backup-daigram"></p>
+![SARSA-Backup-daigram](/assets/sarsa.png)
 
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma Q(S_{t+1},A_{t+1}) - Q(S_t,A_t) ]$$
 
@@ -199,7 +199,7 @@ A more straightforward approach towards balancing exploration and exploitation i
 
 **Q-learning** is an off-policy algorithm that can be used for control. Unlike **SARSA**, in **Q-learning**, we build an optimal policy by choosing the actions maximizing Q-values, *irrespective* of the policy being followed, hence making it off-policy.
 
-<p align="center"><img src="/assets/q.png"/ alt="Q-learning-backup-diagram"></p>
+![Q-learning-backup-diagram](/assets/q.png)
 
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma max_aQ(S_{t+1} , a) - Q(S_t,A_t)]$$
 
@@ -472,7 +472,7 @@ The policy obtained after running Q-learning chooses a path that starts from $S$
 
 ### Comparing the two outputs
 
-<p align="center"><img src="/assets/cliff_env.png"/ alt="CLiff-walking-environment"></p>
+![Cliff-walking-environment](/assets/cliff_env.png)
 
 An important thing to notice in the two outputs is the path that the two algorithms find after playing the game for **10000** trials. The output reflects the conservative nature of SARSA as it finds a safer path to the terminal state. Here "safer" means that the trajectory is at a good enough distance from the cliff, and there is less chance that the agent could wall into it. However, the path earns a net reward of **-16** units, which is less than one with Q-learning.
 
@@ -489,7 +489,7 @@ Although Q-learning finds the optimal policy, its online performance is worse th
 ### Expected SARSA
 Let us consider an update rule just like Q-learning, but with an **Expectation** over all the state-action pairs instead of a maximum. This algorithm is known as **Expected SARSA**. 
 
-<p align="center"><img src="/assets/expectedsarsa.png"/ alt="Expected-SARSA-backup-diagram"></p>
+![Expected-SARSA-backup-diagram](/assets/expectedsarsa.png)
 
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma E_\pi [Q(S_{t+1},A_{t+1}) | S_{t+1}] - Q(S_t,A_t)]$$
 $$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma \displaystyle \sum_{a} \pi(a|S_{t+1})Q(S_{t+1},a) - Q(S_t,A_t)]$$

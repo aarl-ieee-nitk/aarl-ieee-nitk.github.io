@@ -33,21 +33,21 @@ PPO balances between Exploration and Exploitation like other on-policy methods. 
 
 I hope that you have gone through my previous [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2019/03/12/Trust-Region-Policy-Optimization.html) on TRPO. I assume that you have the necessary knowledge to understand the Maths behind the equation below from my previous article. I will start building the idea and intuition behind PPO from the following equation:
 
-<p align="center"><img src="/assets/npg.png"/ alt="Natural policy gradient"></p>
+![Natural policy gradient](/assets/npg.png)
 
 After all the math in the TRPO [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2019/03/12/Trust-Region-Policy-Optimization.html), we arrive at this policy parameter update to limit the policy changes and to ensure monotonic policy improvement. So what are the challenges associated with solving this optimization update?
 
 In TRPO, the inverse of the Hessian $H$ is approximated using the Conjugate Gradient algorithm with the help of a few Hessian-vector products, thus avoiding the expensive computation. However, we still need the Hessian $H$. To avoid computing the second-derivatives, we use the **Fisher Information Matrix** (FIM) which is equal to the following - 
 
-<p align="center"><img src="/assets/fim_log.png"/ alt="F in terms of log-likelihood of the policy"></p>
+![F in terms of log-likelihood of the policy](/assets/fim_log.png)
 
 Though not obvious, F can be [interpreted](https://wiseodd.github.io/techblog/2018/03/11/fisher-information/#:~:text=Fisher%20Information%20Matrix%20is%20defined,in%20second%20order%20optimization%20methods.) as the negative expected Hessian of our log-likelihood model. Hence from now on, I will be using $F$ and $H$ interchangeably in this post.
 
-<p align="center"><img src="/assets/fim.png"/ alt="Fisher Information Matrix"></p>
+![Fisher Information Matrix](/assets/fim.png)
 
 $F$ can be seen basically as a matrix of all the second-order derivatives (with respect to $\theta$) of the function, which in our case, is the $\log$ of the parameterized policy.
 
-<p align="center"><img src="/assets/quad_eq_for_F.png"/ alt="Quadratic equation to minimize"></p>
+![Quadratic equation to minimize](/assets/quad_eq_for_F.png)
 
 F can be computed as the expected value of the product of the log-likelihood function as illustrated before.
 
@@ -63,13 +63,13 @@ There are two versions of PPO. Let us look at them one by one.
 
 ## PPO with adavptive KL-Penalty
 
-<p align="center"><img src="/assets/ppo_penalty_version.jpeg"/ alt="Penalty version for PPO"></p>
+![Penalty version for PPO](/assets/ppo_penalty_version.jpeg)
 
 This approach is similar to what we do in TRPO, except that we optimize using **Stochastic Gradient Ascent**, a first-order optimization method, and vary the KL-penalty according to our requirement.
 
 Here, our optimization objective looks like the above equation. Using the [Lagrange Duality](https://en.wikipedia.org/wiki/Duality_(optimization)), the PPO objective with the adaptive KL penalty can be shown to be equivalent to the constrained optimization problem in TRPO. This basically penalizes the advantage when the policies are different; that is, the KL divergence is high.
 
-<p align="center"><img src="/assets/penalized_vs_constrained.jpeg"/ alt="Penalty version v/s Constrained version"></p>
+![Penalty version v/s Constrained version](/assets/penalized_vs_constrained.jpeg)
 
 Note that the hyperparameter $\delta$ (radius of the trust region) and $\beta$ (the adaptive penalty) are inversely related.
 
@@ -79,9 +79,9 @@ As we see in the penalty form of the objective, choosing a constant value for th
 
 2.  The reverse holds when the KL divergence falls below a certain threshold. We increase the radius of the trust region $\delta$, thereby decreasing $\beta$. We do this to speed-up the learning process and to relax the constraints a bit.
 
-<p align="center"><img src="/assets/ppo_penalty_pseudocode.png"/ alt="Pseudo code for PPO penalty version"></p>
+![Pseudo code for PPO penalty version](/assets/ppo_penalty_pseudocode.png)
 
-[Image Source](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
+![Image Source](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
 
 The figure above shows the pseudo-code for PPO with Adaptive KL Penalty. Note the changes in $\beta$.
 
@@ -119,15 +119,15 @@ When the advantage function is a negative value, it means that action $a$ is not
 
 By seeing the above two versions of the objective function under different conditions, we understand the clipped version of PPO. This clipping makes sure that the new policy does not benefit by going too far from the old policy. Imposing these two constraints helps us achieve the same results as KL-divergence and sometimes even better. Following is a visualization of the objective function - 
 
-<p align="center"><img src="/assets/ppo_clip_graph.png"/ alt="PPO clipped version visualization"></p>
+![PPO clipped version visualization](/assets/ppo_clip_graph.png)
 
-[Image Source](https://arxiv.org/pdf/1707.06347.pdf)
+![Image Source](https://arxiv.org/pdf/1707.06347.pdf)
 
 Finally, we put together all the pieces to form the PPO algorithm with Clipped objective -
 
-<p align="center"><img src="/assets/ppo_clip_pseudocode.png"/ alt="PPO clipped version pseudocode"></p>
+![PPO clipped version pseudocode](/assets/ppo_clip_pseudocode.png)
 
-[Image Source](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
+![Image Source](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
 
 ## End thoughts
 

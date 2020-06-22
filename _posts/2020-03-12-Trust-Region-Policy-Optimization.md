@@ -52,7 +52,7 @@ TRPO ensures this for us!! Let us see how
 
 The **Minorize-Maximization** (MM) algorithm gives us the theoretical guarantees that the updates always result in improving the expected rewards. A simple one line explanation of this algorithm is that it **iteratively maximizes a simpler lower bound function (lower bound with respect to the actual reward function), approximating the reward function locally**.
 
-<p align="center"><img src="/assets/mm_curve.png"/ alt="MM algorithm illustration curve"></p>
+![MM algorithm illustration curve](/assets/mm_curve.png)
 
 So in this algorithm, we start with an initial policy guess $\pi(\theta_i)$. $\theta_i$ is the policy parameter vector for it at the $i^{th}$ iteration. We find a lower bound function $M_i$ (blue-colored in the above figure) that approximates the actual reward function $\eta(\theta)$ (red-colored in the above figure) locally near $\theta_i$. We will then find the optimal theta $\theta_{i+1}$ for this lower bound function $M_i$ and then use it as our next estimate for the policy $\pi(\theta_{i+1})$. We continue this process, and eventually, the policy parameter converges close to the optimal $\theta^{*}$.
 
@@ -64,7 +64,8 @@ This approach guarantees **monotonic policy improvement** (at least theoreticall
 
 Here, we have a maximum step-size $\delta$ which is the radius of our trust region. We call this **Trust Region** because this acts as a threshold for the policy change. So we can *trust* any change in the policy within this radius and be sure that it does not degrade the performance. We find the optimal point in this region and resume the search from there. By doing this we are imposing a restriction that we are allowed to explore only a certain region in the policy space, even though at times, an incentive for better policy might be available in some distant part of the policy space.
 
-<p align="center"><img src="/assets/tr_img.png"/ alt="Trust Region equation"></p>
+![Trust Region equation](/assets/tr_img.png)
+
 
 In the figure above, we maximize our lower bound estimate subject to the condition that the change is limited to $\delta$.
 
@@ -76,13 +77,13 @@ An important point to consider here is the learning speed, which might be slow d
 
 The idea of using IS here is to form an objective function, the gradient of which gives the policy gradient.
 
-<p align="center"><img src="/assets/PG_IS.png"/ alt="Gradient of performance (Policy Gradient) in terms of Importance Sampling ratio"></p>
+![Gradient of performance (Policy Gradient) in terms of Importance Sampling ratio](/assets/PG_IS.png)
 
 This is the policy gradient. To overcome the sample efficiency problem, we use IS to reuse the data from a slightly old policy while doing updates for the current policy. 
 
-<p align="center"><img src="/assets/L_PG.png"/ alt="Surrogate advantage in terms of log"></p>
+![Surrogate advantage in terms of log](/assets/L_PG.png)
 
-<p align="center"><img src="/assets/L_IS.png"/ alt="Surrogate advantage in terms of Importance Sampling ratio"></p>
+![Surrogate advantage in terms of Importance Sampling ratio](/assets/L_IS.png)
 
 $L_{PG}$ is the objective function for our PG as its derivative with respect to $\theta$ gives PG. We can form a **Surrogate Advantage** function using IS as shown in the above figure, and differentiating it with respect to $\theta$ will result in the same gradient. **We can see this Surrogate Advantage as a measure of how the current policy performs relative to the old one using the data from the old policy**. It finds the advantage function for the current policy with samples from the old policy.
 
@@ -92,7 +93,7 @@ It is important to note that if we calculate the variance of the Surrogate advan
 
 The $\delta$ parameter for the trust region is left as a hyperparameter for us to tweak. However, we need to find a lower bound function $M$ to guarantee monotonic policy improvement. The actual [TRPO paper](https://arxiv.org/pdf/1502.05477.pdf) gives detailed proof for this -
 
-<p align="center"><img src="/assets/lower_bound_M.png"/ alt="Lower bound M"></p>
+![Lower bound M](/assets/lower_bound_M.png)
 
 I am not going into the details of the proof in this article, but it can be referenced using the results from the [paper](https://arxiv.org/pdf/1502.05477.pdf).
 
@@ -100,17 +101,17 @@ In the LHS, we redefine the objective function as the difference between the rew
 
 In the RHS, the first term is the **Surrogate advantage** that we talked about in IS, and the second is the **KL-divergence**, which measures the difference between two probability distributions.
 
-<p align="center"><img src="/assets/KLdiv.png"/ alt="KL-divergence"></p>
+![KL-divergence](/assets/KLdiv.png)
 
 Note that KL-divergence does not measure the **distance** between the two probability distributions. This is because it is not symmetric and hence cannot be a measure of distance. These two probability distributions will be the two parameterized policies.
 
 An important note here is that this inequality gives us a concrete proof of the monotonic improvement. This is because, at $\pi$ = $\pi^{'}$, the LHS is $0$ and both the terms in the RHS are also $0$. So equality is satisfied. Now since the RHS is a lower bound, the LHS is always greater than or equal to $0$, which means that the new policy is always better than the old. We can, in fact, give a better guarantee that the real improvement in the policy is even higher than it is in the function $M$ as shown in the following figure -
 
-<p align="center"><img src="/assets/real_improve.png"/ alt="Real improvement "></p>
+![Real improvement](/assets/real_improve.png)
 
 #### Defining the Optimization problem
 
-<p align="center"><img src="/assets/optim_prob.jpeg"/ alt="Optimization problem"></p>
+![Optimization problem](/assets/optim_prob.jpeg)
 
 Now we have two versions of the optimization problem. The first is the **Penalized** version, where we subtract the KL-divergence term scaled by a factor $C$. The second is a **Constrained** problem with a $\delta$ constraint representing the trust region. $C$ and $\delta$ as we can see are inversely related. Both forms are equivalent according to the [Lagrange duality](https://en.wikipedia.org/wiki/Duality_(optimization)). Theoretically, both arrive at the same solution, but in practice, $\delta$ is easier to tune than $C$. Also, empirical results show that $C$ cannot be a fixed value and needs to be more *adaptive*. Hence we use the Constrained problem in TRPO. 
 
@@ -118,13 +119,13 @@ Fun Fact: These enhancements in the hyperparameter C are made in [Proximal Polic
 
 #### Now how do we solve this Optimization problem?
 
-<p align="center"><img src="/assets/optim_prob_constrained.png"/ alt="Optimization problem: Constrained version"></p>
+![Optimization problem: Constrained version](/assets/optim_prob_constrained.png)
 
 This is our constrained problem. However, solving it accurately would be quite expensive. So we use our old friend from mathematics - the [**Taylor Polynomial approximation**](https://brilliant.org/wiki/taylor-series-approximation/).
 
 This makes sense because we just need to approximate the surrogate advantage *locally* near our current policy parameter $\theta_k$, and Taylor Polynomials are a very good tool to approximate a function around a particular point in some interval using just polynomial terms, which are a lot easier to deal with as compared to other functions. So we use the Taylor series to expand the Surrogate advantage and the KL-divergence term.
 
-<p align="center"><img src="/assets/taylor.jpeg"/ alt="Taylor polynomial approximation"></p>
+![Taylor polynomial approximation](/assets/taylor.jpeg)
 
 The first term of $L$ is obviously $0$, as for very small policy changes i.e., the state distribution under the two policies are very similar, the difference between the reward functions is close to $L$. Hence for the same policies it is $0$.
 
@@ -132,13 +133,13 @@ Coming to the first term for KL-divergence. It is $0$ because the divergence bet
 
 Finally, after canceling out all other smaller terms, we approximate our problem as following -
 
-<p align="center"><img src="/assets/l_and_dkl.png"/ alt="Approximate L and DKL"></p>
+![Approximate L and DKL](/assets/l_and_dkl.png)
 
 This is an easier problem to optimize and gives us a decent approximation.
 
 The above problem can be solved analytically. Again the proof could be found in the literature for [**Natural Policy Gradients**](https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf).
 
-<p align="center"><img src="/assets/npg.png"/ alt="Natural policy gradient"></p>
+![Natural policy gradient](/assets/npg.png)
 
 This is what is called a **Natural Policy Gradient**. We could stop here and use this update rule in our algorithm. But calculating the inverse of the **Hessian matrix** $H$ that we get is very expensive, especially for large deep networks. Also, the inverse is numerically unstable. So we need to again find some method for approximating it.
 
@@ -146,17 +147,17 @@ Thanks to the **Conjugate Gradient** (CG) algorithm for this!!
 
 So instead of computing the inverse of $H$, we can solve the below equation - 
 
-<p align="center"><img src="/assets/eqn_for_x_cg.png"/ alt="equation for x in conjugate gradient"></p>
+![equation for x in conjugate gradient](/assets/eqn_for_x_cg.png)
 
-<p align="center"><img src="/assets/mat_vec_prod.png"/ alt="matrix vector product"></p>
+![matrix vector product](/assets/mat_vec_prod.png)
 
 This can be converted to a quadratic optimization problem and could be solved using the CG algorithm. We transform it into quadratic form by following -
 
-<p align="center"><img src="/assets/axb_cg.jpeg"/ alt="quadratic approximation"></p>
+![quadratic approximation](/assets/axb_cg.jpeg)
 
 Which is solving for the following equation -
 
-<p align="center"><img src="/assets/quad_eq_for_H.png"/ alt="quadratic approximation for H"></p>
+![quadratic approximation for H](/assets/quad_eq_for_H.png)
 
 I would not go into the details for the CG algorithm but would like to give intuition behind it.
 
@@ -170,7 +171,7 @@ As you would have noticed, we have made a lot of approximations in order to make
 
 What we use here is something called **Line Search** in the optimization literature.
 
-<p align="center"><img src="/assets/line_search.png"/ alt="Line search pseudo code"></p>
+![Line search pseudo code](/assets/line_search.png)
 
 We verify the new policy $\theta_{k+1}$ first by doing a Line Search and then only make the update. We need to verify two things -
 
@@ -184,7 +185,7 @@ By doing so, we take the largest possible step to change the policy parameter $\
 
 So now we have the whole algorithm ready. Following is the Pseudo-code for TRPO -
 
-<p align="center"><img src="/assets/trpo.png"/ alt="TRPO Pseudo code"></p>
+![TRPO Pseudo code](/assets/trpo.png)
 
 ### Few points to remember -
 
@@ -192,9 +193,9 @@ Although TRPO offers a lot of theoretical guarantees but does not perform very w
 
 In terms of computational cost, the conjugate gradient algorithm allows us to approximate the Hessian inverse without actually computing it, but we still need to find the Hessian matrix. This is again quite expensive and is generally avoided by using the [Fisher Information Matrix](https://wiseodd.github.io/techblog/2018/03/11/fisher-information/#:~:text=Fisher%20Information%20Matrix%20is%20defined,in%20second%20order%20optimization%20methods.) (FIM) as an approximation to the second-derivative of the KL-divergence. Hence we have the following optimization problem - 
 
-<p align="center"><img src="/assets/fim_optim.png"/ alt="Quadratic optimization problem using FIM"></p>
+![Quadratic optimization problem using FIM](/assets/fim_optim.png)
 
-<p align="center"><img src="/assets/fim_log.png"/ alt="Fisher Information Matrix"></p>
+![Fisher Information Matrix](/assets/fim_log.png)
 
 Despite of these downsides, TRPO gives us a new and possibly better way to look at the Policy Gradients and scope for a lot of improvement in the future.
 
