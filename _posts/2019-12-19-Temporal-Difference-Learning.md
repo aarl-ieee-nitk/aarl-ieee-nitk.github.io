@@ -23,7 +23,7 @@ We use **Temporal-Difference** for this. The idea is very simple and elegant. Le
 
 **Temporal Difference** (TD) learning is a family of model-free methods that combines the sampling nature of Monte-Carlo with the bootstrapping behavior of DP. Model-free means that we need not know the details of the environment like the transition and reward probabilities from one state to another given an action. They can be implemented in an online-incremental fashion, making them suitable even for continuing tasks. The figure shows a comparison between the three methods for value-based learning.
 
-<p align="center"><img src="/assets/compare_methods.png"/ alt="Value-based-methods"></p>
+![Value-based methods](/assets/compare_methods.png)
 
 To be precise, the method that we are going to discuss is **TD(0)**, where the 0 indicates the extent of bootstrap. It means that we take the true value of just the immediate reward and then the discounted value for the VF for the next state. A more general version TD($\lambda$) is shown below.
 
