@@ -114,7 +114,7 @@ Here, instead of computing the gradient of the loss by backpropagation, the adve
 
 One important thing to note in this approach is that unlike [Goodfellow et al. 2015](https://arxiv.org/pdf/1412.6572.pdf), it implicitly enables source-target misclassification, i.e, forcing the output classification of a specified input to be a specific target class.
 
-![Source-target misclassification MNIST](/assets/adv/papernot_et_al_attack_2.png)
+![Source-target misclassification MNIST](/assets/adv/papernot_et_al_attack_1.png)
 
 The reason for this being that here we compute the Jacobian of the function which the network is trying to learn. This derivative (Jacobian) basically tells how much an output neuron *changes* if we change an input pixel, which gives us a direction in which we can increase or decrease the probability of any output class. Hence we can increase or decrease an input pixel in such a way that it increases the probability of a certain target class and decreases the probabilities of others. This gives a stronger advantage to the adversary in not only making the Neural Net misclassify the input, but also leading it to a target class. 
 
