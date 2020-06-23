@@ -9,7 +9,7 @@ categories: reinforcement-learning, policy-gradient-methods, sampled-learning, o
 ---
 ## Introduction
 
-In the previous [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2019/03/12/Trust-Region-Policy-Optimization.html), we discussed the **Trust Region Policy Optimization** (TRPO) method for solving the full Reinforcement Learning problem. TRPO builds upon the **Natural Policy Gradient** approach, with a series of approximations for solving the second-order optimization problem. Despite all the theoretical guarantees that TRPO gives, it does not work very well in practice on some problems. There can be two reasons for this - 
+In the previous [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2020/03/12/Trust-Region-Policy-Optimization.html), we discussed the **Trust Region Policy Optimization** (TRPO) method for solving the full Reinforcement Learning problem. TRPO builds upon the **Natural Policy Gradient** approach, with a series of approximations for solving the second-order optimization problem. Despite all the theoretical guarantees that TRPO gives, it does not work very well in practice on some problems. There can be two reasons for this - 
 
 1.  The errors introduced due to approximations magnify and, in turn, lead to divergence of the policy parameters.
 
@@ -31,11 +31,11 @@ PPO is an on-policy algorithm that builds a stochastic policy by tweaking the po
 
 PPO balances between Exploration and Exploitation like other on-policy methods. Since it is on-policy, it samples behavior from the same policy it optimizes. Initially, the exploration rate is higher as compared to the exploitation so that it can explore the state space. Eventually, the policy focuses more on exploiting the rewards already found. This, however, can lead to the policy converging to a sub-optimal policy, which is a downside of all policy-based methods.
 
-I hope that you have gone through my previous [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2019/03/12/Trust-Region-Policy-Optimization.html) on TRPO. I assume that you have the necessary knowledge to understand the Maths behind the equation below from my previous article. I will start building the idea and intuition behind PPO from the following equation:
+I hope that you have gone through my previous [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2020/03/12/Trust-Region-Policy-Optimization.html) on TRPO. I assume that you have the necessary knowledge to understand the Maths behind the equation below from my previous article. I will start building the idea and intuition behind PPO from the following equation:
 
 ![Natural policy gradient](/assets/npg.png)
 
-After all the math in the TRPO [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2019/03/12/Trust-Region-Policy-Optimization.html), we arrive at this policy parameter update to limit the policy changes and to ensure monotonic policy improvement. So what are the challenges associated with solving this optimization update?
+After all the math in the TRPO [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2020/03/12/Trust-Region-Policy-Optimization.html), we arrive at this policy parameter update to limit the policy changes and to ensure monotonic policy improvement. So what are the challenges associated with solving this optimization update?
 
 In TRPO, the inverse of the Hessian $H$ is approximated using the Conjugate Gradient algorithm with the help of a few Hessian-vector products, thus avoiding the expensive computation. However, we still need the Hessian $H$. To avoid computing the second-derivatives, we use the **Fisher Information Matrix** (FIM) which is equal to the following - 
 
@@ -73,7 +73,7 @@ Here, our optimization objective looks like the above equation. Using the [Lagra
 
 Note that the hyperparameter $\delta$ (radius of the trust region) and $\beta$ (the adaptive penalty) are inversely related.
 
-As we see in the penalty form of the objective, choosing a constant value for the hyperparameter $\beta$ can lead to *bad* or disastrous policy (please refer my TRPO [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2019/03/12/Trust-Region-Policy-Optimization.html) to get an idea of a bad policy). So we can dynamically vary $\beta$ so that it adapts to meet our requirements -
+As we see in the penalty form of the objective, choosing a constant value for the hyperparameter $\beta$ can lead to *bad* or disastrous policy (please refer my TRPO [post](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2020/03/12/Trust-Region-Policy-Optimization.html) to get an idea of a bad policy). So we can dynamically vary $\beta$ so that it adapts to meet our requirements -
 
 1.  When the KL divergence between the old and the new policies gets higher than a threshold value, then we can shrink the trust-region $\delta$, which is equivalent to increasing $\beta$. We do this to make sure that both the policies do not differ much, and we do not take large steps.
 
@@ -82,6 +82,7 @@ As we see in the penalty form of the objective, choosing a constant value for th
 ![Pseudo code for PPO penalty version](/assets/ppo_penalty_pseudocode.png)
 
 ![Image Source](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
+[Image Source](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
 
 The figure above shows the pseudo-code for PPO with Adaptive KL Penalty. Note the changes in $\beta$.
 
@@ -91,10 +92,7 @@ Doing this gets us the best of both the worlds. We get the speed close to first-
 
 With PPO, we are **not** guaranteed to find monotonic policy improvement at each step; however, adapting $\beta$ accordingly, tends to work well in practice for improving convergence. In the clipped version of PPO, we remove the KL-divergence term and instead use clipping to make sure that the new policy does not go very far from the old one, despite incentives for better improvement. We modify the objective function as follows - 
 
-$$L(s,a,\theta_k,\theta) = \min\left(
-\frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}  A^{\pi_{\theta_k}}(s,a), \;\;
-\text{clip}\left(\frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}, 1 - \epsilon, 1+\epsilon \right) A^{\pi_{\theta_k}}(s,a)
-\right)$$
+$$L(s,a,\theta_k,\theta) = \min\left(\frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}  A^{\pi_{\theta_k}}(s,a), \text{clip}\left(\frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}, 1 - \epsilon, 1+\epsilon \right) A^{\pi_{\theta_k}}(s,a) \right)$$
 
 Here $\pi(\theta)$ is the old policy and $\pi(\theta_k)$ is the new one. We use the [Importance Sampling](https://en.wikipedia.org/wiki/Importance_sampling) technique to sample trajectories from the old policy while updating the new one. This improves sample efficiency.  
 
@@ -112,8 +110,7 @@ You can view this clipping similar to what we do in trust-region. We find the mo
 
 2. When the Advantage function is negative
 
-$$L(s,a,\theta_k,\theta) = \max\left(\frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}, (1 - \epsilon)
-\right)  A^{\pi_{\theta_k}}(s,a)$$
+$$L(s,a,\theta_k,\theta) = \max\left(\frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}, (1 - \epsilon)\right)  A^{\pi_{\theta_k}}(s,a)$$
 
 When the advantage function is a negative value, it means that action $a$ is not favorable to take in the state $s$. Hence, we should decrease the probability of the same. We do this by imposing a $\max$ constraint this time. It means that even though decreasing the probability ratio below $(1-\epsilon)$ would result in better performance, we do not do so, to make sure that the policies do not diverge much.
 
@@ -122,12 +119,14 @@ By seeing the above two versions of the objective function under different condi
 ![PPO clipped version visualization](/assets/ppo_clip_graph.png)
 
 ![Image Source](https://arxiv.org/pdf/1707.06347.pdf)
+[Image Source](https://arxiv.org/pdf/1707.06347.pdf)
 
 Finally, we put together all the pieces to form the PPO algorithm with Clipped objective -
 
 ![PPO clipped version pseudocode](/assets/ppo_clip_pseudocode.png)
 
 ![Image Source](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
+[Image Source](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
 
 ## End thoughts
 
