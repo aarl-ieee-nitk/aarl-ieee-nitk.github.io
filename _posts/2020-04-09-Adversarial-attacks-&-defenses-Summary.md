@@ -361,7 +361,7 @@ This is a Generative model-based strategy for preventing the attacks. It does **
 
 $$\min_{z} || G(z) - x ||^2_2$$
 
-This technique is applicable to combat both white-box and black-box adversarial attacks against classification networks. At the inference time, when the attacks happens, prior to feeding an image $x$ to the network, we project it onto the range of the Generator by minimizing the reconstruction error $||G(z)-x||^2_2$ (as illustrated in the equation above). Since the Generator was trained to model the unperturbed training data distribution, this added step results in a substantial reduction of any potential adversarial noise. The minimized $z$ is then given as input to the Generator which generates an image $G(z)$, which is then given to the actual classifier.
+This technique is applicable to combat both white-box and black-box adversarial attacks against classification networks. At the inference time, when the attacks happens, prior to feeding an image $x$ to the network, we project it onto the range of the Generator by minimizing the reconstruction error as illustrated in the equation above. Since the Generator was trained to model the unperturbed training data distribution, this added step results in a substantial reduction of any potential adversarial noise. The minimized $z$ is then given as input to the Generator which generates an image $G(z)$, which is then given to the actual classifier.
 
 ![L steps of gradient descent](/assets/adv/defense_gan_2.png)
 
