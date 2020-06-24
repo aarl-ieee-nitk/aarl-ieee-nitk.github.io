@@ -81,7 +81,7 @@ As we see in the penalty form of the objective, choosing a constant value for th
 
 ![Pseudo code for PPO penalty version](/assets/ppo_penalty_pseudocode.png)
 
-![Image Source](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
+![](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
 [Image Source](http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_13_advanced_pg.pdf)
 
 The figure above shows the pseudo-code for PPO with Adaptive KL Penalty. Note the changes in $\beta$.

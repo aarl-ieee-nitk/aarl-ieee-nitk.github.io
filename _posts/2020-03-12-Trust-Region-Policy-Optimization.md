@@ -105,7 +105,7 @@ In the RHS, the first term is the **Surrogate advantage** that we talked about i
 
 Note that KL-divergence does not measure the **distance** between the two probability distributions. This is because it is not symmetric and hence cannot be a measure of distance. These two probability distributions will be the two parameterized policies.
 
-An important note here is that this inequality gives us a concrete proof of the monotonic improvement. This is because, at $\pi$ = $\pi^{'}$, the LHS is $0$ and both the terms in the RHS are also $0$. So equality is satisfied. Now since the RHS is a lower bound, the LHS is always greater than or equal to $0$, which means that the new policy is always better than the old. We can, in fact, give a better guarantee that the real improvement in the policy is even higher than it is in the function $M$ as shown in the following figure -
+An important note here is that this inequality gives us a concrete proof of the monotonic improvement. This is because, at $\pi$ = $\pi^{\prime}$, the LHS is $0$ and both the terms in the RHS are also $0$. So equality is satisfied. Now since the RHS is a lower bound, the LHS is always greater than or equal to $0$, which means that the new policy is always better than the old. We can, in fact, give a better guarantee that the real improvement in the policy is even higher than it is in the function $M$ as shown in the following figure -
 
 ![Real improvement](/assets/real_improve.png)
 

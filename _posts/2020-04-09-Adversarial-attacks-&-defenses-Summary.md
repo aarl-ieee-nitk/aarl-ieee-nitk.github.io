@@ -236,7 +236,7 @@ So the notion of convergence in single-agent RL is clear. It can either be in te
 
 However, most of the times, the goal is to achieve a [Nash Equilibria](https://en.wikipedia.org/wiki/Nash_equilibrium). It is defined as follows - 
 
-$$If\; there\; are\; N\; agents\; in\; Nash\; equilibria,\; it \; means\; that\; none\; of\; the\; agents\; has\; any\; incentive\; to\; unilaterally\; change\; its\; strategy/policy\; with\; the\; strategies/policies\; of\; all\; other\; N-1\: agents\; remaining\; the\; same$$
+$$ \begin{align}&\text{If there are N agents in Nash equilibria, it means that none of the agents has any} \\ \\ &\text{incentive to unilaterally change its strategy/policy with the strategies/policies of } \\ \\ &\text{all other N - 1 agents remaining the same}\end{align}$$
 
 There can be multiple possible Nash equilibria in a game. But what does this got to do with the attacks?
 
@@ -244,7 +244,7 @@ Remember the cyclic non-transitive relationship that we observed among the adver
 
 ![Rock-Paper-Scissors](/assets/adv/rps.png)
 
-In more formal words, if Agent1's parameter vector is $x \epsilon \real^m$ and Agent2's $y \epsilon \real^n$, then we need to find a setting of the parameters in the $\real^{mxn}$ space such that the two agents play a Nash. **If the victim policy plays a Nash equilibria, it would not be exploitable by any adversary**. Self-play is one popular method for achieving this condition, and it has produced highly capable AI systems like [AlphaGo](https://deepmind.com/research/case-studies/alphago-the-story-so-far) and [OpenAI Five](https://openai.com/blog/openai-five/). However, it is also well known that self-play may not always converge to Nash, as it happened in this case. 
+In more formal words, if Agent1's parameter vector is $x\epsilon\mathbb{R}^m$ and Agent2's $y\epsilon\mathbb{R}^n$, then we need to find a setting of the parameters in the $\mathbb{R}^{mxn}$ space such that the two agents play a Nash. **If the victim policy plays a Nash equilibria, it would not be exploitable by any adversary**. Self-play is one popular method for achieving this condition, and it has produced highly capable AI systems like [AlphaGo](https://deepmind.com/research/case-studies/alphago-the-story-so-far) and [OpenAI Five](https://openai.com/blog/openai-five/). However, it is also well known that self-play may not always converge to Nash, as it happened in this case. 
 
 This suggests that we might need to look again at the optimization procedure used to train the policies. Better competitive optimization would help in closing Nash fast and more efficiently. However, the authors mention that they expect this attack procedure to succeed even if the policies converge to a local Nash as the adversary is trained starting from a random point that is likely outside the victim’s attractive basin.
 
@@ -361,7 +361,7 @@ This is a Generative model-based strategy for preventing the attacks. It does **
 
 $$\min_{z} || G(z) - x ||^2_2$$
 
-This technique is applicable to combat both white-box and black-box adversarial attacks against classification networks. At the inference time, when the attacks happens, prior to feeding an image $x$ to the network, we project it onto the range of the Generator by minimizing the reconstruction error $|| G(z) - x ||^2_2$ (as illustrated in the equation above). Since the Generator was trained to model the unperturbed training data distribution, this added step results in a substantial reduction of any potential adversarial noise. The minimized $z$ is then given as input to the Generator which generates an image $G(z)$, which is then given to the actual classifier.
+This technique is applicable to combat both white-box and black-box adversarial attacks against classification networks. At the inference time, when the attacks happens, prior to feeding an image $x$ to the network, we project it onto the range of the Generator by minimizing the reconstruction error $||G(z)-x||^2_2$ (as illustrated in the equation above). Since the Generator was trained to model the unperturbed training data distribution, this added step results in a substantial reduction of any potential adversarial noise. The minimized $z$ is then given as input to the Generator which generates an image $G(z)$, which is then given to the actual classifier.
 
 ![L steps of gradient descent](/assets/adv/defense_gan_2.png)
 
