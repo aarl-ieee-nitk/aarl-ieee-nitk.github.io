@@ -19,7 +19,7 @@ $$G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + ... + \gamma^{T-t-1} R_T$$
 One option might be to truncate the return and end the episode after a certain number of threshold time-steps. However, this might reuslt in the loss of information, especially in the sparse and delayed reward domains, where the agent gets rewards only after trying out many actions in a proper sequence, instead of randomly wandering around. To get over this, Dynamic Programming already provides a way to tackle this problem in the form of **bootstrapping** (updating
 the value estimate for a state from the estimated values of subsequent states). So instead of waiting till the end of the episode, we consider the true discounted reward values up to a particular time step and then take the discounted estimated value function for the next state. So why not combine these two approaches.
 
-We use **Temporal-Difference** for this. The idea is very simple and elegant. Let me describe it with an example - Assume that an agent is playing the game of [Tic-Tac-Toe](https://en.wikipedia.org/wiki/Tic-tac-toe) against some **fixed** opponent. Keeping the opponent fixed reduces the problem to a single-agent MDP instead of Multi-agent. The agent does not have any information about the environment and just gets a reward signal +1 and -1 at the end of a game if it wins or otherwise, respectively. In this setting suppose the agent *thinks* that from the current state $s_t$, on taking some particular action $a_t$, it will have 0.9 probability of winning. It executes that state-action pair and goes into the future and observes the value of the next state. However, suppose the agent had played a bad move which ended up in it losing the game in the future. Clearly, the agent had not anticipated this. So it comes back to that state-action pair $s_t, a_t$ and corrects its estimation of the probability of winning the game by reducing it from $0.9$ to say $0.7$. This is exactly the idea of **Temporal-Difference**! You play some move, see its outcome based on the estimation of the future states, and then come back to correct your current estimation. Note that vice-versa would happen if the agent had won the game, and it would then try to increase the probability of winning from that state-action pair.
+We use **Temporal-Difference** for this. The idea is very simple and elegant. Let me describe it with an example - Assume that an agent is playing the game of [Tic-Tac-Toe](https://en.wikipedia.org/wiki/Tic-tac-toe) against some **fixed** opponent. Keeping the opponent fixed reduces the problem to a single-agent MDP instead of Multi-agent. The agent does not have any information about the environment and just gets a reward signal $+1$ and $-1$ at the end of a game if it wins or otherwise, respectively. In this setting suppose the agent *thinks* that from the current state $s_t$, on taking some particular action $a_t$, it will have $0.9$ probability of winning. It executes that state-action pair and goes into the future and observes the value of the next state. However, suppose the agent had played a bad move which ended up in it losing the game in the future. Clearly, the agent had not anticipated this. So it comes back to that state-action pair $s_t, a_t$ and corrects its estimation of the probability of winning the game by reducing it from $0.9$ to say $0.7$. This is exactly the idea of **Temporal-Difference**! You play some move, see its outcome based on the estimation of the future states, and then come back to correct your current estimation. Note that vice-versa would happen if the agent had won the game, and it would then try to increase the probability of winning from that state-action pair.
 
 **Temporal Difference** (TD) learning is a family of model-free methods that combines the sampling nature of Monte-Carlo with the bootstrapping behavior of DP. Model-free means that we need not know the details of the environment like the transition and reward probabilities from one state to another given an action. They can be implemented in an online-incremental fashion, making them suitable even for continuing tasks. The figure shows a comparison between the three methods for value-based learning.
 
@@ -45,7 +45,7 @@ Moving on, in general Reinforcement Learning, the problems are broadly divided i
 
 The Prediction problem involves sampling an action using the given policy and making updates for the value function in the direction of the error between the predicted value (target) and the old estimate. 
 
-$$ V(S_t) = V(S_t) + \alpha [ R_{t+1} + \gamma V(S_{t+1}) - V(S_t) ] $$
+$$ V(S_t) := V(S_t) + \alpha [ R_{t+1} + \gamma V(S_{t+1}) - V(S_t) ] $$
 
 The error is weighed by a step-size parameter **$\alpha$** (learning rate), which indicates the extent to which the new information about the current state ($R_{t+1} + \gamma V(S_{t+1})$) updates our current estimate. This is because the new information available to us tells a bit more about the environment (since we have seen one step of the actual environment). $\alpha$ = **0** indicates that the old estimate is retained, while $\alpha$ = **1** represents completely forgetting the previous estimate and using the new one. There can be some issues of convergence with probability **1** using a constant step-size since it does not obey the conditions for **stochastic approximation**, as shown below.
 
@@ -189,7 +189,7 @@ The algorithm used for On-policy TD-control is popularly known as **SARSA**. The
 
 ![SARSA-Backup-daigram](/assets/sarsa.png)
 
-$$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma Q(S_{t+1},A_{t+1}) - Q(S_t,A_t) ]$$
+$$Q(S_t,A_t) := Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma Q(S_{t+1},A_{t+1}) - Q(S_t,A_t) ]$$
 
 The update equation for **SARSA** is identical to the one for TD-prediction, except that here we use the action-value function $Q$ instead of the state-value function $V$.
 
@@ -201,7 +201,7 @@ A more straightforward approach towards balancing exploration and exploitation i
 
 ![Q-learning-backup-diagram](/assets/q.png)
 
-$$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma max_aQ(S_{t+1} , a) - Q(S_t,A_t)]$$
+$$Q(S_t,A_t) := Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma max_aQ(S_{t+1} , a) - Q(S_t,A_t)]$$
 
 The update equation for **Q-learning** is the same as **SARSA**, except that here we pick the maximum Q-value over all the actions.
 
@@ -491,11 +491,12 @@ Let us consider an update rule just like Q-learning, but with an **Expectation**
 
 ![Expected-SARSA-backup-diagram](/assets/expectedsarsa.png)
 
-$$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma E_\pi [Q(S_{t+1},A_{t+1}) | S_{t+1}] - Q(S_t,A_t)]$$
-$$Q(S_t,A_t) = Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma \displaystyle \sum_{a} \pi(a|S_{t+1})Q(S_{t+1},a) - Q(S_t,A_t)]$$
+$$Q(S_t,A_t) := Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma \mathbb{E}_{\pi}[Q(S_{t+1},A_{t+1}) | S_{t+1}] - Q(S_t,A_t)]$$
+
+$$Q(S_t,A_t) := Q(S_t,A_t) + \alpha [ R_{t+1} + \gamma \sum_{a}\pi(a|S_{t+1})Q(S_{t+1},a) - Q(S_t,A_t)]$$
 
 We can use it both on as well as off-policy. If $\pi$ is a greedy policy while the behavior being exploratory, then Expected SARSA is exactly Q-learning. Hence this generalizes Q-learning and improves considerably over SARSA. Having these properties, Expected SARSA may outperform both SARSA and Q-learning with some additional computational cost.
 
 ## Conclusion
 
-In this article, we saw some well-known methods to solve Reinforcement Learning problems using **bootstrapping** and **sampling**. However, it is difficult to extend these algorithms to real-world RL problems. Real-world RL problems like the game of **Go** can have up to $10^{170}$ states and more than $200$ possible moves to make at a time, and many problems like teaching a Helicopter to fly in a park, a robot trying to manipulate objects, etc. can have extremely large or asymptotically infinite state and action spaces. The table-lookup representation used until now is highly impractical to solve these problems. Hence we use **function approximators** like **Neural-Networks** to find an approximate action-value function rather than finding the value for each state-action pair. The approximator is chosen such that $|d| \ll S$, where $d$ is the cardinality of the approximator dimensions and $S$ is the dimension of the state-space, and then tuned so that a large part of the state-action space can be represented by just a few parameters (a crude way of explaining the idea). However, the core logic behind the algorithms remains the same, just with a change in the way they are implemented.
+In this article, we saw some well-known methods to solve Reinforcement Learning problems using **bootstrapping** and **sampling**. However, it is difficult to extend these algorithms to real-world RL problems. Real-world RL problems like the game of **Go** can have up to $10^{170}$ states and more than $200$ possible moves to make at a time, and many problems like teaching a Helicopter to fly in a park, a robot trying to manipulate objects, etc. can have extremely large or asymptotically infinite state and action spaces. The table-lookup representation used until now is highly impractical to solve these problems. Hence we use **function approximators** like **Neural-Networks** to find an approximate action-value function rather than finding the value for each state-action pair. The approximator is chosen such that $|d|\ll S$, where $d$ is the cardinality of the approximator dimensions and $S$ is the dimension of the state-space, and then tuned so that a large part of the state-action space can be represented by just a few parameters (a crude way of explaining the idea). However, the core logic behind the algorithms remains the same, just with a change in the way they are implemented.
