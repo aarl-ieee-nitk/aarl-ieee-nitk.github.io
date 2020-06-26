@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Adversarial attacks and defenses in Reinforcement Learning - a Summary"
+title:  "Survey on Adversarial Attacks and Defenses in Reinforcement Learning - a Summary"
 author: "Videh Raj Nema"
 author_github: vrn25
 github_username: 'vrn25'
@@ -8,7 +8,7 @@ date:   2020-04-9 18:10:45 +0530
 categories: reinforcement-learning, adversarial attacks, defense mechanisms
 ---
 
-# Adversarial attacks and defenses in Reinforcement Learning
+# Survey on Adversarial attacks and defenses in Reinforcement Learning
 
 This post contains various adversarial attacks and defensive strategies in Machine Learning, with a specific focus on Reinforcement Learning.
 
