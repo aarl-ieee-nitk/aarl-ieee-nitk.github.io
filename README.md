@@ -23,3 +23,5 @@ For the code, checkout [this](https://github.com/IEEE-NITK/Adversarial-RL) repos
 * Videh Raj Nema
 * Kinshuk Kashyap
 * Manav Singhal
+
+Mentor: Moksh Jain
