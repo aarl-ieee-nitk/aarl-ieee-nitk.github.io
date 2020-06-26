@@ -4,7 +4,7 @@ This repository serves code, blogs and other related work pertaining to the 'Adv
 
 Following are the posts on the blog:
 
-* [Survey on Adversarial Attacks and Defenses in Reinforcement Learning](https://aarl-ieee-nitk.github.io/reinforcement-learning,/adversarial/attacks,/defense/mechanisms/2020/04/09/Adversarial-attacks-&-defenses-Summary.html)
+* [Survey on Adversarial Attacks and Defenses in Reinforcement Learning](https://aarl-ieee-nitk.github.io/reinforcement-learning,/adversarial/attacks,/defense/mechanisms/2020/04/09/Survey-on-Adversarial-attacks-and-defenses.html)
 
 * [Proximal Policy Optimization](https://aarl-ieee-nitk.github.io/reinforcement-learning,/policy-gradient-methods,/sampled-learning,/optimization/theory/2020/03/25/Proximal-Policy-Optimization.html)
 
