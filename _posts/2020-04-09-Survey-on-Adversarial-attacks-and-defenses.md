@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Survey on Adversarial Attacks and Defenses in Reinforcement Learning - a Summary"
+title:  "Survey on Adversarial Attacks and Defenses in Reinforcement Learning"
 author: "Videh Raj Nema"
 author_github: vrn25
 github_username: 'vrn25'
