@@ -432,19 +432,19 @@ Note: Feel free to go back to the definition of Robustness discussed earlier.
 
 There are generally two approaches for this - 
 
-1. Construct proofs for an lower bound on the robustness. This means to ensure that the network will at least perform as good as some lower limit. In the context of images, this corresponds to giving some guarantee that if the input is perturbed at most by some amount, the output will still be classified correctly.
+1. Construct proofs for a lower bound on the robustness. This means to ensure that the network will at least perform as good as some lower limit. In the context of images, this corresponds to giving some guarantee that if the input is perturbed at most by some amount, the output will still be classified correctly.
 
 2. Demonstrate attacks for an upper bound on the robustness. This corresponds to introducing an attack that successfully breaks a defense system, thereby putting an upper bound on the performance.
 
 Coming up with the proofs for the first method is difficult. Many times, it might be easier to come up with strong attacks and use them as benchmarks for evaluation. This paper does the same - It breaks defensive distillation by the second approach.
 
-The attack method introduced in this paper is perhaps the strongest of all we discussed before. Carlini-Wagner attack is the first to generate adversarial examples for ImageNet. All the other attack methods fail to produce "neat" adversarial examples either due to the maximum limiting perturbation allowed or computational expense. This method even works against Defensive Distillation, while all the other attacks discussed above fail, getting their success rate decreased from $95\%$ to $0.5\%$. However, this attack gets a success rate of $100\%$ on distilled as well as undistilled Neural Nets!
+The attack method introduced in this paper is perhaps the strongest of all we discussed before. The Carlini-Wagner attack is the first to generate adversarial examples for ImageNet. All the other attack methods fail to produce "neat" adversarial examples either due to the maximum limiting perturbation allowed or computational expense. This method even works against Defensive Distillation, while all the other attacks discussed above fail, getting their success rate decreased from $95\%$ to $0.5\%$. However, this attack gets a success rate of $100\%$ on distilled as well as undistilled Neural Nets!
 
-Carlini-Wagner give three forms of the attack, differing in the $L_p$ norms, which measure the distance between pixels - 
+Carlini-Wagner gives three forms of the attack, differing in the $L_p$ norms, which measure the distance between pixels - 
 
 * $L_0$ distance corresponds to the number of pixels that have been altered in the image.
 
-* $L_2$ corresponds to the Eucledian distance between the images - squaring all the pixel-values, summing, and taking square root.
+* $L_2$ corresponds to the Euclidean distance between the images - squaring all the pixel-values, summing, and taking the square root.
 
 * $L_\infty$ measures the maximum difference between any two pixels in the images. Informally, it means that no pixel is allowed to change beyond an upper limit.
 
@@ -456,7 +456,7 @@ $$\text{such that} \; C(x+\delta) = t,$$
 
 $$\text{and }x+n \; \epsilon \; [0, 1]^n$$
 
-It means for an input image $x$, find a perturbation $\delta$ such that it minimizes $D$, as measured by an $L_p$ norm metric (three of them discussed above). This is subject to that the network/classifier $C$ classifies the perturbed image into the target class $t$, and the perturbed pixel still lies in the valid range (0 and 1 correspond to 0 and 255 normalized pixel-values respectively). The first condition lets source-target misclassification and the second makes sure that the image is still valid with respect to the input distribution.
+It means for an input image $x$, find a perturbation $\delta$ such that it minimizes $D$, as measured by an $L_p$ norm metric (three of them discussed above). This is subject to that the network/classifier $C$ classifies the perturbed image into the target class $t$, and the perturbed pixel still lies in the valid range (0 and 1 correspond to 0 and 255 normalized pixel-values respectively). The first condition lets source-target misclassification, and the second makes sure that the image is still valid with respect to the input distribution.
 
 Let us divide the optimization problem into three parts - 
 
@@ -470,7 +470,7 @@ $$ f=max(max[Z(x\prime)_{i}: i \neq t] - Z(x\prime)_{t}, 0) $$
 
 Here $Z$ are the output logits of the network.
 
-**II**. Now, instead of using the constraint version
+**II**. Now, instead of using the constraint version - 
 
 $$\min_{\delta} D(x, x+\delta)$$
 
@@ -496,29 +496,29 @@ $$\min_{w} [\lVert0.5(\tanh(w)+1)-x\rVert^2_2 + c \cdot f(0.5(\tanh(w)+1))]$$
 
 $$\text{where } f(x\prime)=max(max[Z(x\prime)_{i}: i \neq t] - Z(x\prime)_{t}, -\kappa)$$
 
-The left term in the minimization objective denotes the similarity between the original and perturbed samples, with the distance measured in $L_2$ norm. The right term is the objective function $f$ on the perturbed image that ensures the first condition ($f$ is negative or $0$ if the target class is $t$). The second condition is satisfied implicitly by the change of variables (due to the range of $\tanh$). The constant $\kappa$ is a tuning parameter denoting the confidence with which the input is misclassified. If its magnitude is large, the output logits for class $t$ should be large as compared to the output logits of all other classes, therby forcing the network to find an adversarial example with higher confidence. 
+The left term in the minimization objective denotes the similarity function between the original and perturbed samples, with the distance measured in $L_2$ norm. The right term in the objective function ensures the first condition ($f$ is negative or $0$ if the target class is $t$). The second condition is satisfied implicitly by the change of variables (due to the range of $\tanh$). The constant $\kappa$ is a tuning parameter denoting the confidence with which the input is misclassified. If its magnitude is large, the output logits for class $t$ should be large as compared to the output logits of all other classes, thereby forcing the network to find an adversarial example with higher confidence. Metaphorically, the first term denotes **distance**, and the second term denotes **confidence**. 
 
 Finally, the whole objective minimizes the distortion, simultaneously misclassifying the original input to some target class. The trade-off between the two parts of the objective is steered by the constant $c$. Now, how to choose $c$?
 
-If $c$ is large, gradient descent (or modified Adam updates) takes steps in an overly-greedy manner forcing the whole minimization procedure dominated by the second term, and ignoring the distance loss fucntion. This would lead to the adversarial example being too different from the original one and hence sub-optimal solutions. However, if $c$ is very small (close to $0$), gradient descent would not be able to make any progress and we won't find any adversarial examples. For a fixed constant $c$ to be useful, it is important that the two terms in the objective ($D$ and $f$) should remain approximately equal. So we use modified binary search for finding the suitable $c$. We start with a small $c$ value, say $0.01$, plug it into the objective and run $10,000$ steps of gradient descent with Adam optimizer to find the adversarial example. Repeating this process by doubling the value of $c$, we get the following curve - 
+If $c$ is large, gradient descent (or modified Adam updates) takes steps in an overly-greedy manner forcing the whole minimization procedure dominated by the second term and ignoring the distance loss function. This would lead to the adversarial example being too different from the original one and hence sub-optimal solutions. However, if $c$ is very small (close to $0$), gradient descent would not be able to make any progress, and we won't find any adversarial examples. For a fixed constant $c$ to be useful, it is important that the two terms in the objective ($D$ and $f$) should remain approximately equal. So we use a modified binary search for finding the suitable $c$. We start with a small $c$ value, say $0.01$, plug it into the objective, and run $10,000$ steps of gradient descent with Adam optimizer to find the adversarial example. Repeating this process by doubling the value of $c$, we get the following curve - 
 
 ![choosing c](/assets/adv/choosing_c.png)
 
-The curve is plotted by evaluation on MNIST dataset. The x-axis in the above figure represents $c$ plotted on log-scale. The left y-axis shows the probability with which we can generate an adversarial examples and the right one shows the mean adversarial example distance (left term in the objective). Note that the mean distance increases as $c$ increases, as expected. 
+The curve is plotted by evaluation on the MNIST dataset. The x-axis in the above figure represents $c$ plotted on the log-scale. The left y-axis shows the probability with which we can generate adversarial examples, and the right one shows the mean adversarial example distance (left term in the objective). Note that the mean distance increases as $c$ increases, as expected. 
 
-Here we can see that at $c=1$, we can find an adversarial example with $100\%$ probability and minimum possible distortion. Higher values of $c$ yield adversarial examples with same maximum probability, but the distortion increases. 
+Here we can see that at $c=1$, we can find an adversarial example with $100\%$ probability and minimum possible distortion. Higher values of $c$ yield adversarial examples with the same maximum probability, but the distortion increases. 
 
 #### <a name="discretization"></a>Discretization post-processing
 
-This is an important step in evaluation of this attack. Note that we take the pixel intensities in the range $[0, 1]$. However, in a *valid* image, each pixel intensity must be a discrete integer between $0$ and $255$, both inclusive. This additional constraint is not captured in the formulation we saw above. The reason is that the intensity is rounded-off to the nearest integer and we get $\lfloor 255(x_i+\delta_i) \rfloor$ (assuming rounding-off to lower value). Doing so degrades the quality of the attack. However, this is not true for the weaker attacks that we discussed before. For instance, in FGSM, discretization rarely effects the quality of the attack. However, in the C-W attack, the perturbations to the pixels are so small that discretization effects cannot be ignored. 
+This is an important step in the evaluation of this attack. Note that we take the pixel intensities in the range $[0, 1]$. However, in a *valid* image, each pixel intensity must be a discrete integer between $0$ and $255$, both inclusive. This additional constraint is not captured in the formulation we saw above. The reason is that the intensity is rounded-off to the nearest integer, and we get $\lfloor 255(x_i+\delta_i) \rfloor$ (assuming rounding-off to lower value). Doing so degrades the quality of the attack. However, this is not true for the weaker attacks that we discussed before. For instance, in FGSM, discretization rarely affects the quality of the attack. However, in the C-W attack, the perturbations to the pixels are so small that discretization effects cannot be ignored. 
 
-Hence after finding an adversarial example by optimizing the objective function, we perform a greedy search on the lattice defined by the discrete solutions by changing one pixel value at a time. All the results in the paper include this post-processing step.
+Hence after finding an adversarial example by optimizing the objective function, we perform a greedy search on the lattice defined by the discrete solutions by changing one pixel-intensity at a time. All the results in the paper include this post-processing step.
 
 #### <a name="three-attacks"></a>The three attacks
 
 #### <a name="L-2"></a>**$L_2$ attack**
 
-This uses the $L_2$ metric in the objective function. The optmization problem formulation is already highlighted before - 
+This uses the $L_2$ metric in the objective function. The optimization problem formulation is already highlighted before - 
 
 $$\min_{w} [\lVert0.5(\tanh(w)+1)-x\rVert^2_2 + c \cdot f(0.5(\tanh(w)+1))]$$
 
@@ -528,19 +528,19 @@ $$\text{where } f(x\prime)=max(max[Z(x\prime)_{i}: i \neq t] - Z(x\prime)_{t}, -
 
 ![L2 attack on CIFAR10](/assets/adv/l2_ci.png)
 
-This shows the $L_2$ attack on the MNIST and CIFAR10 dataset. In MNIST, the only case where one would find a little visual difference between the original and the adversarial digit is when the source is $7$ and target is $6$. For CIFAR10, there is no visual distinction from the baseline image.
+This shows the $L_2$ attack on the MNIST and CIFAR10 dataset. In MNIST, the only case where one would find a little visual difference between the original and the adversarial digit is when the source is $7$, and the target is $6$. For CIFAR10, there is no visual distinction from the baseline image.
 
-The other two norms are not straight-forward as $L_2$ and rquire some bells and whistles to work.
+The other two norms are not straight-forward as $L_2$ and require some bells and whistles to work.
 
 #### <a name="L-0"></a>**$L_0$ attack**
 
-The $L_0$ metric is non-differentiable, hence cannot be used directly for gradient descent procedure. $L_0$ measure the distance in terms of the number of pixels that have different intensities in the two examples. Hence we use an iterative algorithm that starts from the whole set of pixels that could be modified, make an $L_2$ attack on the pixels, and then freeze the pixels which produce a distortion that does effects the output less than some threshold amount. This is then repeated until we find a minimal set of pixel, perturbing which will change the output class the most.
+The $L_0$ metric is non-differentiable, hence cannot be used directly for gradient descent procedure. $L_0$ measure the distance in terms of the number of pixels that have different intensities in the two examples. Hence we use a shrinking iterative algorithm that starts from the whole set of pixels that could be modified, makes an $L_2$ attack on the input image, and then freezes the pixels modifying, which affects the output by less than some specified amount. This is then repeated until we find a minimal set of pixels, and perturbing, which will change the output class the most.
 
 ![L0 attack on MNIST](/assets/adv/l0_mn.png)
 
 ![L0 attack on CIFAR10](/assets/adv/l0_ci.png)
 
-As we can see, for MNIST, this method produces images with more distortions as compared to the $L_2$, but still the adversarial examples are not so different. The result is same as the previous for CIFAR10.
+As we can see, for MNIST, this method produces images with more distortions as compared to the $L_2$, but still, the adversarial examples are not so different. The result is the same as the previous for CIFAR10.
 
 #### <a name="L-inf"></a>**$L_{\infty}$ attack**
 
@@ -554,32 +554,32 @@ To get around this, we use the following iterative attack -
 
 $$\min_{\delta} [\sum_i[max((\delta_i-\tau), 0)] + c \cdot f(x+\delta)]$$
 
-Here, all the pixels having intensity more than $\tau$ are penalized. This prevents oscillations as all the large values are penalized.
+Here, all the pixels having intensities more than $\tau$ are penalized. This prevents oscillations as all the large values are penalized.
 
 ![L_inf attack on MNIST](/assets/adv/linf_mn.png)
 
 ![L_inf attack on CIFAR10](/assets/adv/linf_ci.png)
 
-The perturbations are noticable on the MNIST dataset, but still are recognizable as their original classes. Attack on CIFAR10 has no visual difference from the baseline input. **On the ImageNet dataset, $L_{\infty}$ attack produces so small perturbations that it is possible to change the clssification of the input into any desirable class by changing just the lowest bit of each pixel**, a change that would be impossible to detect visually.
+The perturbations are noticeable on the MNIST dataset, but still are recognizable as their original classes. Attack on CIFAR10 has no visual difference from the baseline input. **On the ImageNet dataset, $L_{\infty}$ attack produces such small perturbations that it is possible to change the classification of the input into any desirable class by changing just the lowest bit of each pixel**, a change that would be impossible to detect visually.
 
 ```
 It is interesting to note that in all the three attacks on MNIST, 
-the worst case distortion is when source class in 7 and target class in 6.
+the worst-case distortion is when source class in 7 and target class in 6.
 ```
 
-Attack evaluations also show that as the learning task becomes more difficult, other methods produce worse result, while C-W attack performs even better.
+Attack evaluations also show that as the learning task becomes more difficult, other methods produce a worse result, while the C-W attack performs even better.
 
 #### <a name="synth-digits"></a>Generating Synthetic digits
 
 ![synth_digit](/assets/adv/synth.png)
 
-This is an interesting experiment carried out to show the strength of this attack. We start from a completely black or white image and apply the three distance metrics to successfully classify the image in each of the ten target classes. We can see the amount of perturbation required to misclassify the blank images to any target class is almost negligible! Here all the black images were initially classified as $1$ and all white images as $8$, hence they require no change.
+This is an interesting experiment carried out to show the strength of this attack. We start from a completely black or white image and apply the three distance metrics to successfully classify the image in each of the ten target classes. We can see the amount of perturbation required to misclassify the blank images to any target class is almost negligible! Here all the black images were initially classified as $1$ and all the white images as $8$, hence they require no change.
 
-A similar experiment is carried out by [Papernot et al. 2016](#jsma). However, with their attack, one can easily recognize the target digit for class 0, 2, 3, and 5.
+A similar experiment is carried out by [Papernot et al. 2016](#jsma). However, with their attack, one can easily recognize the target digit for classes $0$, $2$, $3$, and $5$.
 
 #### <a name="dd-evaluation"></a>Evaluating Defensive Distillation
 
-As shown in the paper, these attacks have a success rate of $100\%$, even for defensively distilled networks. Distillation adds almost no value over the undistilled networks - $L_0$ and $L_2$ attacks perform slightly worse and $L_{\infty}$ performs approximately the same. 
+As shown in the paper, these attacks have a success rate of $100\%$, even for defensively distilled networks. Distillation adds almost no value over the undistilled networks - $L_0$ and $L_2$ attacks perform slightly worse, and $L_{\infty}$ performs approximately the same. 
 
 Following are some key points in the paper which explain the failure of Defensive Distillation -
 
@@ -587,7 +587,7 @@ Following are some key points in the paper which explain the failure of Defensiv
 
 *The key insight here is that by training to match the first network, we will hopefully avoid overfitting against any of the training data. If the reason that neural networks exist is that neural networks are highly non-linear and have “blind spots” [[46](https://arxiv.org/pdf/1312.6199.pdf)] where adversarial examples lie, then preventing this type of over-fitting might remove those blind spots.*
 
-*In fact, as we will see later, defensive distillation does not remove adversarial examples. One potential reason this may occur is that others [[11](https://arxiv.org/pdf/1412.6572.pdf)] have argued the reason adversarial examples exist is not due to blind spots in a highly non-linear neural network, but due only to the locally-linear nature of neural networks. This so-called linearity hypothesis appears to be true [[47](https://ieeexplore.ieee.org/document/8093865)], and under this explanation it is perhaps less surprising that distillation does not increase the robustness of neural networks.*
+*In fact, as we will see later, defensive distillation does not remove adversarial examples. One potential reason this may occur is that others [[11](https://arxiv.org/pdf/1412.6572.pdf)] have argued the reason adversarial examples exist is not due to blind spots in a highly non-linear neural network, but due only to the locally-linear nature of neural networks. This so-called linearity hypothesis appears to be true [[47](https://ieeexplore.ieee.org/document/8093865)], and under this explanation, it is perhaps less surprising that distillation does not increase the robustness of neural networks.*
 
 """
 
@@ -595,17 +595,17 @@ We can prove empirically that distillation does not increase the robustness of t
 
 ![Effect of temperature in mean adversarial distance](/assets/adv/effect_of_temp.png)
 
-Here we see that there is no positive correlation between the distillation temperature and the mean adversarial distance (as observed in the weaker attacks). Note that the latter measures the robustness of the networks (expected value of the radius is the mean adversarial distance). In fact, the correlation coefficient is negative. This suggest that increasing the temperature does not increase the robustness, instead it only causes the previous weaker attacks to fail more often.
+Here we see that there is no positive correlation between the distillation temperature and the mean adversarial distance (as observed in the weaker attacks). Note that the latter measures the robustness of the networks (expected value of the radius is the mean adversarial distance). In fact, the correlation coefficient is negative. This suggests that increasing the temperature does not increase the robustness; instead, it only causes the previous weaker attacks to fail more often.
 
 #### <a name="transferability"></a>Breaking Defensive Distillation again with Transferability!
 
-We demonstrated that C-W attack successfully work against distilled network. But can it be that an adversarial example created from an undistilled network fails (or transfers to) a distilled network? **YES!!**
+We demonstrated that the C-W attack successfully works against the distilled network. But can it be that an adversarial example created from an undistilled network fails (or transfers to) a distilled network? **YES!!**
 
-Recall that this is the Transferability property of adversarial examples as discussed in [Szegdey et al. 2014](#lbfgs). This is achieved by generating *high-confidence* adversarial examples on a standard model. Remember the constant $\kappa$ in the objective function?
+Recall that this is the Transferability property of adversarial examples, as discussed in [Szegdey et al. 2014](#lbfgs). This is achieved by generating *high-confidence* adversarial examples on a standard model. Remember the constant $\kappa$ in the objective function?
 
 $$f(x\prime)=max(max[Z(x\prime)_{i}: i \neq t] - Z(x\prime)_{t}, -\kappa)$$
 
-Increasing this $\kappa$ value forces the network to find adversarial examples with *higher-confidence*. What is means is that the adversarial example should not barely cross the boundary and enter into the target class (or another random class in case of untargetted attacks), instead **it should be classified to the target class with high probability**.
+Increasing this $\kappa$ value forces the network to find adversarial examples with *higher-confidence*. What is means is that the adversarial example should not barely cross the boundary and enter into the target class (or another random class in case of untargeted attacks); instead **it should be classified to the target class with high probability**.
 
 There are two experiments for testing this hypothesis - 
 
@@ -613,7 +613,7 @@ There are two experiments for testing this hypothesis -
 
 ![transfer to a standard model](/assets/adv/transfer_1.png)
 
-In this experiment, we divide the MNIST dataset into two parts and train two separate standard networks on them. Adversarial examples that break the first network are generated with increasing value of $\kappa$. We can see the results for both Untargetted as well Targetted scenarios. 
+In this experiment, we divide the MNIST dataset into two parts and train two separate standard networks on them. Adversarial examples that break the first network are generated with an increasing value of $\kappa$. We can see the results for both Untargeted as well as Targeted scenarios. 
 
 Note that the probability increases almost linearly from $\kappa = 0$ to $20$ till it becomes 1. It remains constant for higher values of $\kappa$.
 
@@ -621,13 +621,13 @@ Note that the probability increases almost linearly from $\kappa = 0$ to $20$ ti
 
 ![transfer to a distilled model](/assets/adv/transfer_2.png)
 
-The setup here is same as the previous, with a difference that now that second model is trained using Defensive Distillation. **Again we find that adversarial examples do transfer**. Interestingly, here the probability reaches $1$ at $\kappa = 40$.
+The setup here is the same as the previous, with a difference that now that the second model is trained using Defensive Distillation. **Again, we find that adversarial examples do transfer**. Interestingly, here the probability reaches $1$ at $\kappa = 40$.
 
 #### <a name="conclusion-cw"></a>Conclusion
 
-Finally, this work tells us how easy it can be fail powerful models, not only in Deep Learning, but in all of Machine Learning. And this can be possible with extremely minute perturbations, as we saw, which are almost undetectable to human eye (or least the distortion is not so much that it would be classified incorrectly by humans). The attacker need not even have complete access to the network. It can generate adversarial examples on its own network and use then on the victim network. Thanks to Transferability :P.
+Finally, this work tells us how easy it can be to fail powerful models, not only in Deep Learning but in all of Machine Learning. And this can be possible with extremely minute perturbations, as we saw, which are almost undetectable to the human eye (or least the distortion is not so much that it would be classified incorrectly by humans). The attacker need not even have complete access to the network. It can generate adversarial examples on its own network and use then on the victim network. Thanks to Transferability :P.
 
-This work also suggests that even though Defensive Distillation is able to block the flow of gradients, it is not *immune* to stronger attacks, like the ones discussed here. Hence while proposing a defense system or before deploying models, we should take care of three things - 
+This work also suggests that even though Defensive Distillation can *block* the flow of gradients, it is not *immune* to stronger attacks, like the ones discussed here. Hence while proposing a defense system or before deploying models, we should take care of three things - 
 
 * The defense system **should** increase the robustness of the model, as measured by the mean adversarial distance.
 
