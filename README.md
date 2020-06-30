@@ -14,7 +14,7 @@ Following are the posts on the blog:
 
 * [Temporal-Difference Learning](https://aarl-ieee-nitk.github.io/reinforcement-learning,/value-based-learning,/bootstrapped-learning,/sampled-learning/2019/12/19/Temporal-Difference-Learning.html)
 
-For the code, checkout [this](https://github.com/IEEE-NITK/Adversarial-RL) repository.
+For the code, checkout [this](https://github.com/IEEE-NITK/Adversarial-Reinforcement-Learning) repository.
 
 ## Team
 * Madhuparna Bhowmik
