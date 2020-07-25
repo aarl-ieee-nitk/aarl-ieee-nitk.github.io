@@ -6,6 +6,7 @@ author_github: vrn25
 github_username: 'vrn25'
 date:   2020-04-9 18:10:45 +0530
 categories: reinforcement-learning, adversarial attacks, defense mechanisms
+comments: true
 ---
 
 # Survey on Adversarial attacks and defenses in Reinforcement Learning

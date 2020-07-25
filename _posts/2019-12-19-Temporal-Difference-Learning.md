@@ -6,6 +6,7 @@ author_github: vrn25
 github_username: 'vrn25'
 date:   2019-12-19 18:26:11 +0530
 categories: reinforcement-learning, value-based-learning, bootstrapped-learning, sampled-learning
+comments: true
 ---
 
 In this article, we will learn about **Temporal Difference** (TD) learning, a value-based method for solving Reinforcement Learning problems. We will also implement Tabular TD algorithms from scratch on Gridworld and Cliff-walking environments.
