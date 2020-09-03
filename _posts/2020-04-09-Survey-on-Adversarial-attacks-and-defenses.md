@@ -308,7 +308,7 @@ $$ \begin{align}&\text{If there are N agents in Nash equilibria, it means that n
 
 There can be multiple possible Nash equilibria in a game. But what does this got to do with the attacks?
 
-Remember the cyclic non-transitive relationship that we observed among the adversarial, normal opponent, masked, and victim policies? This behavior is similar to what we see in *Rock-Paper-Scissors* (RPS). There does not exist a Nash in RPS. Say there is a situation where player 1 has rock, and player 2 has paper. Following this, the player 2 wins, so it would not change its strategy. For player 1, switching its move to scissors, provided the player 2 stays with paper, will be more rewarding, and hence the two players are not in Nash. We will have a cyclic behavior like - *paper, scissors, rock, paper, scissors, rock.....*. The same is true in case of the policies we have seen. 
+Remember the cyclic non-transitive relationship that we observed among the adversarial, normal opponent, masked, and victim policies? This behavior is similar to what we see in *Rock-Paper-Scissors* (RPS). There does not exist a pure-startegy Nash in RPS. Say there is a situation where player 1 has rock, and player 2 has paper. Following this, the player 2 wins, so it would not change its strategy. For player 1, switching its move to scissors, provided the player 2 stays with paper, will be more rewarding, and hence the two players are not in Nash. We will have a cyclic behavior like - *paper, scissors, rock, paper, scissors, rock.....*. The same is true in case of the policies we have seen. 
 
 ![Rock-Paper-Scissors](/assets/adv/rps.png)
 
